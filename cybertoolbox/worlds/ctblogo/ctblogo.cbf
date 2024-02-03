@@ -1,0 +1,26 @@
+<CBF VERSION="201">
+	<EVENT NAME="Frame" TYPE="SYSTEM">
+		<DIAGRAM NAME="RotateCtbTitle" XPOS="367" YPOS="451" WIDTH="320" HEIGHT="240">
+			<MODULE CLASS="System" TYPE="Frame" NAME="module1" XPOS="0" YPOS="0"/>
+			<MODULE CLASS="String" TYPE="Direction" NAME="module2" XPOS="97" YPOS="53" VALUE="0.0,1.0,0.0"/>
+			<MODULE CLASS="String" TYPE="Merge2Values" NAME="module3" XPOS="145" YPOS="93"/>
+			<MODULE CLASS="Filter" TYPE="Mul" NAME="module4" XPOS="65" YPOS="125" VALUE="-0.05"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module5" XPOS="241" YPOS="93" VALUE="ctblogo"/>
+			<ROUTE OUT="module3.0" IN="module5.1"/>
+			<ROUTE OUT="module2.0" IN="module3.0"/>
+			<ROUTE OUT="module4.0" IN="module3.1"/>
+			<ROUTE OUT="module1.0" IN="module4.0"/>
+		</DIAGRAM>
+		<DIAGRAM NAME="diagram0" XPOS="353" YPOS="528" WIDTH="320" HEIGHT="240">
+			<MODULE CLASS="System" TYPE="Frame" NAME="module1" XPOS="0" YPOS="0"/>
+			<MODULE CLASS="String" TYPE="Direction" NAME="module2" XPOS="97" YPOS="53" VALUE="0.0,1.0,0.0"/>
+			<MODULE CLASS="String" TYPE="Merge2Values" NAME="module3" XPOS="145" YPOS="93"/>
+			<MODULE CLASS="Filter" TYPE="Mul" NAME="module4" XPOS="65" YPOS="125" VALUE="0.025"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module5" XPOS="241" YPOS="93" VALUE="earth"/>
+			<ROUTE OUT="module3.0" IN="module5.1"/>
+			<ROUTE OUT="module2.0" IN="module3.0"/>
+			<ROUTE OUT="module4.0" IN="module3.1"/>
+			<ROUTE OUT="module1.0" IN="module4.0"/>
+		</DIAGRAM>
+	</EVENT>
+</CBF>

@@ -1,0 +1,23 @@
+#VRML V2.0 utf8
+DEF CTB_BEHAVIRO_INFO WorldInfo {
+	title "CyberToolbox Behavior Format V1.0"
+	info [
+		"addition.cbf"
+	]
+}
+Viewpoint {
+	fieldOfView 0.785398
+	jump TRUE
+	position 0.0 0.0 0.0
+	orientation 0.0 0.0 1.0 0.0
+	description ""
+}
+NavigationInfo {
+	visibilityLimit 0.0
+	headlight FALSE
+	speed 1.0
+	type [
+	]
+	avatarSize [
+	]
+}

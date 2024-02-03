@@ -1,0 +1,63 @@
+#CBF V1.0 ascii
+Event {
+	name   "Start"
+	type   "SYSTEM"
+}
+Event {
+	name   "Frame"
+	type   "SYSTEM"
+	Diagram {
+		name "rotateBall"
+		pos  279 734
+		size 320 240
+		Module {
+			class "System"
+			type  "Frame"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetRotation"
+			name  "module2"
+			pos   224 64
+			value "ball"
+		}
+		Module {
+			class "Filter"
+			type  "Mul"
+			name  "module3"
+			pos   64 96
+			value "0.1"
+		}
+		Module {
+			class "String"
+			type  "Direction"
+			name  "module4"
+			pos   64 32
+			value "0.0,1.0,0.0"
+		}
+		Module {
+			class "String"
+			type  "Merge2Values"
+			name  "module5"
+			pos   128 64
+		}
+		Dataflow module4.0 to module5.0
+		Dataflow module3.0 to module5.1
+		Dataflow module5.0 to module2.1
+		Dataflow module1.0 to module3.0
+	}
+}
+Event {
+	name   "Mouse"
+	type   "SYSTEM"
+}
+Event {
+	name   "Keyboard"
+	type   "SYSTEM"
+}
+Event {
+	name   "Pickup"
+	type   "SYSTEM"
+}

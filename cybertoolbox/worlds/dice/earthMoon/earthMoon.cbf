@@ -1,0 +1,138 @@
+#CBF V1.0 ascii
+Event {
+	name   "Start"
+}
+Event {
+	name   "Frame"
+	Diagram {
+		name "rotateEarth"
+		pos  381 560
+		size 320 240
+		Module {
+			class "System"
+			type  "Frame"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetRotation"
+			name  "module2"
+			pos   264 72
+			value "earth"
+		}
+		Module {
+			class "String"
+			type  "Direction"
+			name  "module3"
+			pos   112 32
+			value "0.0,1.0,0.0"
+		}
+		Module {
+			class "Numeric"
+			type  "Div"
+			name  "module4"
+			pos   91 104
+		}
+		Module {
+			class "String"
+			type  "Value"
+			name  "module5"
+			pos   35 136
+			value "10"
+		}
+		Module {
+			class "String"
+			type  "Merge2Values"
+			name  "module6"
+			pos   203 48
+		}
+		Dataflow module5.0 to module4.1
+		Dataflow module1.0 to module4.0
+		Dataflow module4.0 to module6.1
+		Dataflow module3.0 to module6.0
+		Dataflow module6.0 to module2.1
+	}
+	Diagram {
+		name "rotateMoon"
+		pos  389 479
+		size 467 338
+		Module {
+			class "System"
+			type  "Frame"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   384 104
+			value "moon"
+		}
+		Module {
+			class "Math"
+			type  "Sin"
+			name  "module3"
+			pos   176 96
+		}
+		Module {
+			class "Math"
+			type  "Cos"
+			name  "module4"
+			pos   176 152
+		}
+		Module {
+			class "Filter"
+			type  "Mul"
+			name  "module5"
+			pos   240 120
+			value "6"
+		}
+		Module {
+			class "Filter"
+			type  "Mul"
+			name  "module6"
+			pos   248 176
+			value "6"
+		}
+		Module {
+			class "String"
+			type  "Merge3Values"
+			name  "module7"
+			pos   320 96
+		}
+		Module {
+			class "String"
+			type  "Value"
+			name  "module8"
+			pos   195 33
+			value "0"
+		}
+		Module {
+			class "Filter"
+			type  "Mul"
+			name  "module9"
+			pos   64 128
+			value "-0.1"
+		}
+		Dataflow module8.0 to module7.1
+		Dataflow module5.0 to module7.0
+		Dataflow module3.0 to module5.0
+		Dataflow module6.0 to module7.2
+		Dataflow module7.0 to module2.1
+		Dataflow module4.0 to module6.0
+		Dataflow module1.0 to module9.0
+		Dataflow module9.0 to module3.0
+		Dataflow module9.0 to module4.0
+	}
+}
+Event {
+	name   "Keyboard"
+}
+Event {
+	name   "Mouse"
+}
+Event {
+	name   "Pickup"
+}

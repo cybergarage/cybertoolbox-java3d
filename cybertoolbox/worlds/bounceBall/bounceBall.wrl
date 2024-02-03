@@ -1,0 +1,95 @@
+#VRML V2.0 utf8
+DEF ball Transform {
+	translation 0.0 7.0 0.0
+	rotation 0.0 0.0 1.0 0.0
+	scale 1.0 1.0 1.0
+	scaleOrientation 0.0 0.0 1.0 0.0
+	center 0.0 0.0 0.0
+	children [
+		DEF ballShape Shape {
+			appearance Appearance {
+				material DEF ballColor Material {
+					diffuseColor 1.0 1.0 1.0
+					ambientIntensity 0.2
+					specularColor 0.0 0.0 0.0
+					emissiveColor 0.0 0.0 0.0
+					shininess 0.2
+					transparency 0.0
+				}
+			}
+			geometry Sphere {
+				radius 1.0
+			}
+		}
+	]
+}
+DEF base Transform {
+	translation 0.0 -2.0 0.0
+	rotation 0.0 0.0 1.0 0.0
+	scale 1.0 1.0 1.0
+	scaleOrientation 0.0 0.0 1.0 0.0
+	center 0.0 0.0 0.0
+	children [
+		DEF baseShape Shape {
+			appearance Appearance {
+				material DEF ballColor Material {
+					diffuseColor 1.0 1.0 1.0
+					ambientIntensity 0.2
+					specularColor 0.0 0.0 0.0
+					emissiveColor 0.0 0.0 0.0
+					shininess 0.2
+					transparency 0.0
+				}
+			}
+			geometry Cylinder {
+				radius 8.0
+				height 1.0
+				side TRUE
+				top TRUE
+				bottom TRUE
+			}
+		}
+	]
+}
+DEF ballPosInterp PositionInterpolator {
+	key [
+		0.0
+		0.2
+		0.4
+		0.6
+		0.8
+		1.0
+	]
+	keyValue [
+		0.0 10.0 0.0,
+		0.0 9.5 0.0,
+		0.0 8.0 0.0,
+		0.0 6.0 0.0,
+		0.0 3.5 0.0,
+		0.0 0.0 0.0
+	]
+}
+Viewpoint {
+	fieldOfView 0.785398
+	jump TRUE
+	position 0.10064092 2.9905138 24.000008
+	orientation 0.0 0.0 1.0 0.0
+	description ""
+}
+NavigationInfo {
+	visibilityLimit 0.0
+	headlight TRUE
+	speed 1.0
+	type [
+		"PICK"
+	]
+	avatarSize [
+	]
+}
+DEF CTB_BEHAVIRO_INFO WorldInfo {
+	title "CyberToolbox Behavior Format V2.0"
+	info [
+		"bounceBall.cbf"
+	]
+}
+ROUTE ballPosInterp.value TO ball.translation

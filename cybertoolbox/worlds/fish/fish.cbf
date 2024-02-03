@@ -1,0 +1,47 @@
+<CBF VERSION="201">
+	<EVENT NAME="Start" TYPE="SYSTEM">
+		<DIAGRAM NAME="initialize" XPOS="680" YPOS="308" WIDTH="320" HEIGHT="240">
+			<MODULE CLASS="Transform" TYPE="SetTranslation" NAME="module1" XPOS="192" YPOS="32" VALUE="fish"/>
+			<MODULE CLASS="String" TYPE="Position" NAME="module3" XPOS="64" YPOS="32" VALUE="0.0,0.0,0.0"/>
+			<MODULE CLASS="String" TYPE="Rotation" NAME="module4" XPOS="64" YPOS="96" VALUE="0.0,1.0,0.0,0.0"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module5" XPOS="192" YPOS="96" VALUE="fish"/>
+			<ROUTE OUT="module3.0" IN="module1.1"/>
+			<ROUTE OUT="module4.0" IN="module5.1"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Frame" TYPE="SYSTEM">
+		<DIAGRAM NAME="swimFish" XPOS="179" YPOS="349" WIDTH="459" HEIGHT="324">
+			<MODULE CLASS="System" TYPE="Frame" NAME="module1" XPOS="0" YPOS="0"/>
+			<MODULE CLASS="Transform" TYPE="GetRotation" NAME="module2" XPOS="32" YPOS="160" VALUE="fish"/>
+			<MODULE CLASS="Transform" TYPE="SetTranslation" NAME="module3" XPOS="384" YPOS="152" VALUE="fish"/>
+			<MODULE CLASS="Geometry" TYPE="Rotate" NAME="module4" XPOS="160" YPOS="112"/>
+			<MODULE CLASS="String" TYPE="Direction" NAME="module5" XPOS="32" YPOS="64" VALUE="0.0,0.0,1.0"/>
+			<MODULE CLASS="Transform" TYPE="GetTranslation" NAME="module6" XPOS="216" YPOS="40" VALUE="fish"/>
+			<MODULE CLASS="Numeric" TYPE="Add" NAME="module7" XPOS="290" YPOS="89"/>
+			<ROUTE OUT="module6.0" IN="module7.0"/>
+			<ROUTE OUT="module4.0" IN="module7.1"/>
+			<ROUTE OUT="module7.0" IN="module3.1"/>
+			<ROUTE OUT="module2.0" IN="module4.1"/>
+			<ROUTE OUT="module5.0" IN="module4.0"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Pickup" TYPE="SYSTEM">
+		<DIAGRAM NAME="changeRotation" XPOS="103" YPOS="509" WIDTH="575" HEIGHT="295">
+			<MODULE CLASS="System" TYPE="Pickup" NAME="module1" XPOS="0" YPOS="0"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module5" XPOS="440" YPOS="80" VALUE="fish"/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module9" XPOS="32" YPOS="120"/>
+			<MODULE CLASS="String" TYPE="Direction" NAME="module12" XPOS="32" YPOS="64" VALUE="0.0,1.0,0.0"/>
+			<MODULE CLASS="String" TYPE="PI" NAME="module13" XPOS="32" YPOS="176"/>
+			<MODULE CLASS="Filter" TYPE="Mul" NAME="module14" XPOS="112" YPOS="176" VALUE="2"/>
+			<MODULE CLASS="Numeric" TYPE="Mul" NAME="module15" XPOS="232" YPOS="136"/>
+			<MODULE CLASS="String" TYPE="Merge2Values" NAME="module16" XPOS="320" YPOS="80"/>
+			<ROUTE OUT="module1.0" IN="module5.E"/>
+			<ROUTE OUT="module13.0" IN="module14.0"/>
+			<ROUTE OUT="module14.0" IN="module15.1"/>
+			<ROUTE OUT="module9.0" IN="module15.0"/>
+			<ROUTE OUT="module12.0" IN="module16.0"/>
+			<ROUTE OUT="module15.0" IN="module16.1"/>
+			<ROUTE OUT="module16.0" IN="module5.1"/>
+		</DIAGRAM>
+	</EVENT>
+</CBF>

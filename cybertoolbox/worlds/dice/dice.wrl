@@ -1,0 +1,297 @@
+#VRML V2.0 utf8
+Viewpoint {
+	fieldOfView 0.785398
+	jump TRUE
+	position 0.018782787 0.0 5.8639293
+	orientation 0.0 1.0 0.0 0.0
+	description """"
+}
+NavigationInfo {
+	visibilityLimit 0.0
+	headlight TRUE
+	speed 1.0
+	type [
+		"PICK"
+	]
+	avatarSize [
+	]
+}
+DEF saikoro Transform {
+	translation 0.0 0.0 0.0
+	rotation 1.0 0.0 0.0 1.57
+	scale 1.0 1.0 1.0
+	scaleOrientation 0.0 0.0 1.0 0.0
+	center 0.0 0.0 0.0
+	children [
+		Shape {
+			appearance Appearance {
+				texture ImageTexture {
+					repeatS TRUE
+					repeatT TRUE
+					url [
+						"dice1.gif"
+					]
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid TRUE
+				coord Coordinate {
+					point [
+						-1.0 1.0 1.0,
+						1.0 1.0 1.0,
+						1.0 1.0 -1.0,
+						-1.0 1.0 -1.0,
+						-1.0 -1.0 1.0,
+						1.0 -1.0 1.0,
+						1.0 -1.0 -1.0,
+						-1.0 -1.0 -1.0
+					]
+				}
+				texCoord TextureCoordinate {
+					point [
+						0.0 1.0,
+						1.0 1.0,
+						1.0 0.0,
+						0.0 0.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3
+				]
+			}
+		}
+		Shape {
+			appearance Appearance {
+				texture ImageTexture {
+					repeatS TRUE
+					repeatT TRUE
+					url [
+						"dice6.gif"
+					]
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid TRUE
+				coord Coordinate {
+					point [
+						-1.0 -1.0 -1.0,
+						1.0 -1.0 -1.0,
+						1.0 -1.0 1.0,
+						-1.0 -1.0 1.0
+					]
+				}
+				texCoord TextureCoordinate {
+					point [
+						0.0 0.0,
+						1.0 0.0,
+						1.0 1.0,
+						0.0 1.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3
+				]
+			}
+		}
+		Shape {
+			appearance Appearance {
+				texture ImageTexture {
+					repeatS TRUE
+					repeatT TRUE
+					url [
+						"dice3.gif"
+					]
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid TRUE
+				coord Coordinate {
+					point [
+						-1.0 1.0 1.0,
+						-1.0 -1.0 1.0,
+						1.0 -1.0 1.0,
+						1.0 1.0 1.0
+					]
+				}
+				texCoord TextureCoordinate {
+					point [
+						0.0 1.0,
+						0.0 0.0,
+						1.0 0.0,
+						1.0 1.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3
+				]
+			}
+		}
+		Shape {
+			appearance Appearance {
+				texture ImageTexture {
+					repeatS TRUE
+					repeatT TRUE
+					url [
+						"dice5.gif"
+					]
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid TRUE
+				coord Coordinate {
+					point [
+						1.0 1.0 1.0,
+						1.0 -1.0 1.0,
+						1.0 -1.0 -1.0,
+						1.0 1.0 -1.0
+					]
+				}
+				texCoord TextureCoordinate {
+					point [
+						1.0 1.0,
+						0.0 1.0,
+						0.0 0.0,
+						1.0 0.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3
+				]
+			}
+		}
+		Shape {
+			appearance Appearance {
+				texture ImageTexture {
+					repeatS TRUE
+					repeatT TRUE
+					url [
+						"dice4.gif"
+					]
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid TRUE
+				coord Coordinate {
+					point [
+						1.0 1.0 -1.0,
+						1.0 -1.0 -1.0,
+						-1.0 -1.0 -1.0,
+						-1.0 1.0 -1.0
+					]
+				}
+				texCoord TextureCoordinate {
+					point [
+						1.0 1.0,
+						1.0 0.0,
+						0.0 0.0,
+						0.0 1.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3
+				]
+			}
+		}
+		Shape {
+			appearance Appearance {
+				texture ImageTexture {
+					repeatS TRUE
+					repeatT TRUE
+					url [
+						"dice2.gif"
+					]
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid TRUE
+				coord Coordinate {
+					point [
+						-1.0 1.0 -1.0,
+						-1.0 -1.0 -1.0,
+						-1.0 -1.0 1.0,
+						-1.0 1.0 1.0
+					]
+				}
+				texCoord TextureCoordinate {
+					point [
+						1.0 0.0,
+						0.0 0.0,
+						0.0 1.0,
+						1.0 1.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3
+				]
+			}
+		}
+		DEF WORLD_EVENT_USER_Pickup_saikoro_TouchSensor_SOURCE TouchSensor {
+			enabled TRUE
+		}
+	]
+}
+Background {
+	groundColor [
+	]
+	skyColor [
+		0.0 0.0 0.0
+	]
+	groundAngle [
+	]
+	skyAngle [
+	]
+	frontUrl [
+	]
+	backUrl [
+	]
+	leftUrl [
+	]
+	rightUrl [
+	]
+	topUrl [
+	]
+	bottomUrl [
+	]
+}
+DEF CTB_BEHAVIRO_INFO WorldInfo {
+	title "CyberToolbox Behavior Format V1.0"
+	info [
+		"dice.cbf"
+	]
+}
+DEF CTB_BEHAVIRO_INFO WorldInfo {
+	title "CyberToolbox Behavior Format V1.0"
+	info [
+		"dice.cbf"
+	]
+}

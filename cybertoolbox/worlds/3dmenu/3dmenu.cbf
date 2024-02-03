@@ -1,0 +1,117 @@
+<CBF VERSION="201">
+	<EVENT NAME="Start" TYPE="SYSTEM">
+		<DIAGRAM NAME="SliderInitialization" XPOS="134" YPOS="776" WIDTH="320" HEIGHT="240">
+			<MODULE CLASS="String" TYPE="Rotation" NAME="module1" XPOS="32" YPOS="32" VALUE="0.0,0.0,1.0,0.0"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module2" XPOS="192" YPOS="32" VALUE="slider"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module3" XPOS="192" YPOS="96" VALUE="rotation"/>
+			<MODULE CLASS="String" TYPE="Value" NAME="module4" XPOS="32" YPOS="96" VALUE="0"/>
+			<ROUTE OUT="module1.0" IN="module2.1"/>
+			<ROUTE OUT="module4.0" IN="module3.1"/>
+		</DIAGRAM>
+		<DIAGRAM NAME="SetPageIndex" XPOS="42" YPOS="507" WIDTH="516" HEIGHT="302">
+			<MODULE CLASS="Misc" TYPE="SetArray" NAME="module1" XPOS="192" YPOS="32" VALUE="page,0"/>
+			<MODULE CLASS="String" TYPE="Value" NAME="module2" XPOS="64" YPOS="32" VALUE="overview/index_j3d.html"/>
+			<MODULE CLASS="Misc" TYPE="SetArray" NAME="module3" XPOS="416" YPOS="32" VALUE="page,1"/>
+			<MODULE CLASS="Misc" TYPE="SetArray" NAME="module4" XPOS="192" YPOS="96" VALUE="page,2"/>
+			<MODULE CLASS="Misc" TYPE="SetArray" NAME="module5" XPOS="416" YPOS="96" VALUE="page,3"/>
+			<MODULE CLASS="Misc" TYPE="SetArray" NAME="module6" XPOS="192" YPOS="160" VALUE="page,4"/>
+			<MODULE CLASS="String" TYPE="Value" NAME="module7" XPOS="64" YPOS="96" VALUE="sample/index_j3d.html"/>
+			<MODULE CLASS="String" TYPE="Value" NAME="module8" XPOS="64" YPOS="160" VALUE="purchase/index_j3d.html"/>
+			<MODULE CLASS="String" TYPE="Value" NAME="module9" XPOS="288" YPOS="32" VALUE="revision/index_j3d.html"/>
+			<MODULE CLASS="String" TYPE="Value" NAME="module10" XPOS="288" YPOS="96" VALUE="download/index_j3d.html"/>
+			<ROUTE OUT="module2.0" IN="module1.2"/>
+			<ROUTE OUT="module9.0" IN="module3.2"/>
+			<ROUTE OUT="module7.0" IN="module4.2"/>
+			<ROUTE OUT="module10.0" IN="module5.2"/>
+			<ROUTE OUT="module8.0" IN="module6.2"/>
+		</DIAGRAM>
+		<DIAGRAM NAME="SetCurrentPage" XPOS="413" YPOS="440" WIDTH="320" HEIGHT="240">
+			<MODULE CLASS="String" TYPE="Value" NAME="module1" XPOS="32" YPOS="64" VALUE="overview/index_j3d.html"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module2" XPOS="192" YPOS="64" VALUE="currentPage"/>
+			<ROUTE OUT="module1.0" IN="module2.1"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Pickup" TYPE="SYSTEM">
+		<DIAGRAM NAME="ShowDocument" XPOS="120" YPOS="367" WIDTH="1053" HEIGHT="739">
+			<MODULE CLASS="System" TYPE="Pickup" NAME="module1" XPOS="0" YPOS="0" VALUE="Normalized"/>
+			<MODULE CLASS="String" TYPE="Direction" NAME="module2" XPOS="40" YPOS="120" VALUE="0.0,1.0,0.0"/>
+			<MODULE CLASS="String" TYPE="Merge2Values" NAME="module3" XPOS="352" YPOS="64"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module4" XPOS="496" YPOS="72" VALUE="slider"/>
+			<MODULE CLASS="String" TYPE="Divide2Values" NAME="module5" XPOS="88" YPOS="24"/>
+			<MODULE CLASS="Numeric" TYPE="Mul" NAME="module6" XPOS="152" YPOS="40"/>
+			<MODULE CLASS="String" TYPE="PI" NAME="module7" XPOS="0" YPOS="80"/>
+			<MODULE CLASS="Filter" TYPE="Mul" NAME="module8" XPOS="88" YPOS="80" VALUE="2"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module9" XPOS="896" YPOS="536" VALUE="rotation"/>
+			<MODULE CLASS="Boolean" TYPE="Not" NAME="module10" XPOS="378" YPOS="152"/>
+			<MODULE CLASS="Numeric" TYPE="Add" NAME="module11" XPOS="264" YPOS="264"/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module12" XPOS="154" YPOS="88" VALUE="rotation"/>
+			<MODULE CLASS="Numeric" TYPE="Mod" NAME="module13" XPOS="424" YPOS="328"/>
+			<MODULE CLASS="String" TYPE="PI" NAME="module14" XPOS="32" YPOS="288"/>
+			<MODULE CLASS="Filter" TYPE="Mul" NAME="module15" XPOS="136" YPOS="312" VALUE="2"/>
+			<MODULE CLASS="Numeric" TYPE="Add" NAME="module16" XPOS="648" YPOS="392"/>
+			<MODULE CLASS="Numeric" TYPE="Mod" NAME="module17" XPOS="672" YPOS="296"/>
+			<MODULE CLASS="Numeric" TYPE="Div" NAME="module18" XPOS="744" YPOS="248"/>
+			<MODULE CLASS="String" TYPE="PI" NAME="module19" XPOS="527" YPOS="123"/>
+			<MODULE CLASS="Filter" TYPE="Mul" NAME="module20" XPOS="696" YPOS="128" VALUE="2"/>
+			<MODULE CLASS="Filter" TYPE="Div" NAME="module21" XPOS="751" YPOS="179" VALUE="5"/>
+			<MODULE CLASS="Filter" TYPE="Floor" NAME="module22" XPOS="824" YPOS="272"/>
+			<MODULE CLASS="Misc" TYPE="GetArray" NAME="module23" XPOS="784" YPOS="328" VALUE="page,4"/>
+			<MODULE CLASS="Math" TYPE="Negative" NAME="module24" XPOS="512" YPOS="344"/>
+			<MODULE CLASS="Filter" TYPE="Div" NAME="module25" XPOS="336" YPOS="448" VALUE="5"/>
+			<MODULE CLASS="Filter" TYPE="Div" NAME="module27" XPOS="400" YPOS="465" VALUE="-2"/>
+			<MODULE CLASS="Numeric" TYPE="Sub" NAME="module28" XPOS="552" YPOS="457"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module30" XPOS="928" YPOS="488" VALUE="slider"/>
+			<MODULE CLASS="Numeric" TYPE="Mul" NAME="module31" XPOS="672" YPOS="512"/>
+			<MODULE CLASS="String" TYPE="Merge2Values" NAME="module32" XPOS="872" YPOS="473"/>
+			<MODULE CLASS="Math" TYPE="Negative" NAME="module33" XPOS="736" YPOS="512"/>
+			<MODULE CLASS="Misc" TYPE="ShowDocument" NAME="module34" XPOS="960" YPOS="328" VALUE="TEST,UNDER"/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module35" XPOS="832" YPOS="192" VALUE="currentPage"/>
+			<MODULE CLASS="Boolean" TYPE="NotEqual" NAME="module36" XPOS="920" YPOS="273"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module37" XPOS="1008" YPOS="337" VALUE="currentPage"/>
+			<ROUTE OUT="module3.0" IN="module4.1"/>
+			<ROUTE OUT="module2.0" IN="module3.0"/>
+			<ROUTE OUT="module5.0" IN="module6.0"/>
+			<ROUTE OUT="module7.0" IN="module8.0"/>
+			<ROUTE OUT="module8.0" IN="module6.1"/>
+			<ROUTE OUT="module1.2" IN="module5.0"/>
+			<ROUTE OUT="module1.0" IN="module4.E"/>
+			<ROUTE OUT="module1.0" IN="module10.0"/>
+			<ROUTE OUT="module10.0" IN="module9.E"/>
+			<ROUTE OUT="module11.0" IN="module3.1"/>
+			<ROUTE OUT="module12.0" IN="module11.1"/>
+			<ROUTE OUT="module6.0" IN="module11.0"/>
+			<ROUTE OUT="module14.0" IN="module15.0"/>
+			<ROUTE OUT="module15.0" IN="module13.1"/>
+			<ROUTE OUT="module15.0" IN="module16.1"/>
+			<ROUTE OUT="module16.0" IN="module17.0"/>
+			<ROUTE OUT="module15.0" IN="module17.1"/>
+			<ROUTE OUT="module19.0" IN="module20.0"/>
+			<ROUTE OUT="module20.0" IN="module21.0"/>
+			<ROUTE OUT="module21.0" IN="module18.1"/>
+			<ROUTE OUT="module18.0" IN="module22.0"/>
+			<ROUTE OUT="module22.0" IN="module23.1"/>
+			<ROUTE OUT="module11.0" IN="module13.0"/>
+			<ROUTE OUT="module17.0" IN="module18.0"/>
+			<ROUTE OUT="module13.0" IN="module24.0"/>
+			<ROUTE OUT="module15.0" IN="module25.0"/>
+			<ROUTE OUT="module25.0" IN="module27.0"/>
+			<ROUTE OUT="module24.0" IN="module28.0"/>
+			<ROUTE OUT="module27.0" IN="module28.1"/>
+			<ROUTE OUT="module28.0" IN="module16.0"/>
+			<ROUTE OUT="module25.0" IN="module31.1"/>
+			<ROUTE OUT="module22.0" IN="module31.0"/>
+			<ROUTE OUT="module10.0" IN="module30.E"/>
+			<ROUTE OUT="module32.0" IN="module30.1"/>
+			<ROUTE OUT="module2.0" IN="module32.0"/>
+			<ROUTE OUT="module33.0" IN="module32.1"/>
+			<ROUTE OUT="module33.0" IN="module9.1"/>
+			<ROUTE OUT="module31.0" IN="module33.0"/>
+			<ROUTE OUT="module23.0" IN="module34.0"/>
+			<ROUTE OUT="module36.0" IN="module34.E"/>
+			<ROUTE OUT="module35.0" IN="module36.0"/>
+			<ROUTE OUT="module23.0" IN="module36.1"/>
+			<ROUTE OUT="module36.0" IN="module37.E"/>
+			<ROUTE OUT="module23.0" IN="module37.1"/>
+		</DIAGRAM>
+	</EVENT>
+</CBF>

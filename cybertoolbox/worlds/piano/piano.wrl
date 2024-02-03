@@ -1,0 +1,344 @@
+#VRML V2.0 utf8
+Background {
+	groundColor [
+	]
+	skyColor [
+		0.0 0.0 0.0
+	]
+	groundAngle [
+	]
+	skyAngle [
+	]
+	frontUrl [
+	]
+	backUrl [
+	]
+	leftUrl [
+	]
+	rightUrl [
+	]
+	topUrl [
+	]
+	bottomUrl [
+	]
+}
+DEF keyboard Transform {
+	translation 0.0 0.0 0.0
+	rotation 0.0 0.0 1.0 0.0
+	scale 1.0 1.0 1.0
+	scaleOrientation 0.0 0.0 1.0 0.0
+	center 0.0 0.0 0.0
+	children [
+		DEF cKey Transform {
+			translation 0.0 0.0 0.0
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF cKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 1.0 1.0 1.0
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.95 4.0 1.0
+					}
+				}
+			]
+		}
+		DEF dKey Transform {
+			translation 1.0 0.0 0.0
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF dKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 1.0 1.0 1.0
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.95 4.0 1.0
+					}
+				}
+			]
+		}
+		DEF eKey Transform {
+			translation 2.0 0.0 0.0
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF eKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 1.0 1.0 1.0
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.95 4.0 1.0
+					}
+				}
+			]
+		}
+		DEF fKey Transform {
+			translation 3.0 0.0 0.0
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF fKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 1.0 1.0 1.0
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.95 4.0 1.0
+					}
+				}
+			]
+		}
+		DEF gKey Transform {
+			translation 4.0 0.0 0.0
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF gKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 1.0 1.0 1.0
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.95 4.0 1.0
+					}
+				}
+			]
+		}
+		DEF aKey Transform {
+			translation 5.0 0.0 0.0
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF aKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 1.0 1.0 1.0
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.95 4.0 1.0
+					}
+				}
+			]
+		}
+		DEF bKey Transform {
+			translation 6.0 0.0 0.0
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF bKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 1.0 1.0 1.0
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.95 4.0 1.0
+					}
+				}
+			]
+		}
+		DEF csKey Transform {
+			translation 0.5 0.9 0.4
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF csKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.1 0.1 0.1
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.5 2.2 1.0
+					}
+				}
+			]
+		}
+		DEF dsKey Transform {
+			translation 1.5 0.9 0.4
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF dsKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.1 0.1 0.1
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.5 2.2 1.0
+					}
+				}
+			]
+		}
+		DEF esKey Transform {
+			translation 2.5 0.9 0.4
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF esKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.1 0.1 0.1
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.5 2.2 1.0
+					}
+				}
+			]
+		}
+		DEF gsKey Transform {
+			translation 4.5 0.9 0.4
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF gsKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.1 0.1 0.1
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.5 2.2 1.0
+					}
+				}
+			]
+		}
+		DEF asKey Transform {
+			translation 5.5 0.9 0.4
+			rotation 0.0 0.0 1.0 0.0
+			scale 1.0 1.0 1.0
+			scaleOrientation 0.0 0.0 1.0 0.0
+			center 0.0 0.0 0.0
+			children [
+				DEF asKey Shape {
+					appearance Appearance {
+						material Material {
+							diffuseColor 0.1 0.1 0.1
+							ambientIntensity 0.2
+							specularColor 0.0 0.0 0.0
+							emissiveColor 0.0 0.0 0.0
+							shininess 0.2
+							transparency 0.0
+						}
+					}
+					geometry Box {
+						size 0.5 2.2 1.0
+					}
+				}
+			]
+		}
+	]
+}
+Viewpoint {
+	fieldOfView 0.785398
+	jump TRUE
+	position 2.8774 0.0 10.9746
+	orientation 0.0 1.0 0.0 0.00229024
+	description ""
+}
+NavigationInfo {
+	visibilityLimit 0.0
+	headlight TRUE
+	speed 1.0
+	type [
+		"PICK"
+	]
+	avatarSize [
+	]
+}
+DEF CTB_BEHAVIRO_INFO WorldInfo {
+	title "CyberToolbox Behavior Format V1.0"
+	info [
+		"piano.cbf"
+	]
+}

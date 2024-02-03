@@ -1,0 +1,154 @@
+<CBF VERSION="200">
+	<EVENT NAME="Start" TYPE="SYSTEM">
+		<DIAGRAM NAME="InitializeBall" XPOS=738 YPOS=227 WIDTH=425 HEIGHT=582>
+			<MODULE CLASS="Transform" TYPE="SetTranslation" NAME="module1" XPOS=192 YPOS=32 VALUE="ICO"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module2" XPOS=192 YPOS=96 VALUE="ICO"/>
+			<MODULE CLASS="String" TYPE="Position" NAME="module3" XPOS=64 YPOS=32 VALUE="0.0,0.0,0.0"/>
+			<MODULE CLASS="String" TYPE="Rotation" NAME="module4" XPOS=64 YPOS=96 VALUE="0.0,0.0,1.0,0.0"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module5" XPOS=256 YPOS=208 VALUE="ballRotDirection"/>
+			<MODULE CLASS="String" TYPE="Merge3Values" NAME="module6" XPOS=128 YPOS=208/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module7" XPOS=46 YPOS=165/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module8" XPOS=48 YPOS=208/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module9" XPOS=48 YPOS=248/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module10" XPOS=48 YPOS=304/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module11" XPOS=48 YPOS=352/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module12" XPOS=48 YPOS=392/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module13" XPOS=248 YPOS=352 VALUE="ballMoveDirection"/>
+			<MODULE CLASS="String" TYPE="Merge3Values" NAME="module14" XPOS=128 YPOS=352/>
+			<MODULE CLASS="Filter" TYPE="Mul" NAME="module15" XPOS=192 YPOS=352 VALUE="15"/>
+			<ROUTE OUT="module4.0" IN="module2.1"/>
+			<ROUTE OUT="module3.0" IN="module1.1"/>
+			<ROUTE OUT="module7.0" IN="module6.0"/>
+			<ROUTE OUT="module9.0" IN="module6.2"/>
+			<ROUTE OUT="module8.0" IN="module6.1"/>
+			<ROUTE OUT="module6.0" IN="module5.1"/>
+			<ROUTE OUT="module10.0" IN="module14.0"/>
+			<ROUTE OUT="module11.0" IN="module14.1"/>
+			<ROUTE OUT="module12.0" IN="module14.2"/>
+			<ROUTE OUT="module15.0" IN="module13.1"/>
+			<ROUTE OUT="module14.0" IN="module15.0"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Frame" TYPE="SYSTEM">
+		<DIAGRAM NAME="BallAction" XPOS=330 YPOS=801 WIDTH=711 HEIGHT=362>
+			<MODULE CLASS="System" TYPE="Frame" NAME="module1" XPOS=0 YPOS=0/>
+			<MODULE CLASS="String" TYPE="Merge2Values" NAME="module4" XPOS=288 YPOS=64/>
+			<MODULE CLASS="Filter" TYPE="Mul" NAME="module5" XPOS=64 YPOS=96 VALUE="0.4"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module6" XPOS=384 YPOS=72 VALUE="ICO"/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module7" XPOS=112 YPOS=40 VALUE="ballRotDirection"/>
+			<MODULE CLASS="Transform" TYPE="GetTranslation" NAME="module8" XPOS=112 YPOS=192 VALUE="ICO"/>
+			<MODULE CLASS="Transform" TYPE="SetTranslation" NAME="module9" XPOS=448 YPOS=176 VALUE="ICO"/>
+			<MODULE CLASS="Numeric" TYPE="Add" NAME="module10" XPOS=312 YPOS=176/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module11" XPOS=216 YPOS=136 VALUE="ballMoveDirection"/>
+			<ROUTE OUT="module5.0" IN="module4.1"/>
+			<ROUTE OUT="module1.0" IN="module5.0"/>
+			<ROUTE OUT="module4.0" IN="module6.1"/>
+			<ROUTE OUT="module7.0" IN="module4.0"/>
+			<ROUTE OUT="module8.0" IN="module10.1"/>
+			<ROUTE OUT="module10.0" IN="module9.1"/>
+			<ROUTE OUT="module11.0" IN="module10.0"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Collision" TYPE="USER" OPTION="ICO:TOP:0.1">
+		<DIAGRAM NAME="ChangeDirection" XPOS=228 YPOS=493 WIDTH=711 HEIGHT=240>
+			<MODULE CLASS="System" TYPE="Collision" NAME="module1" XPOS=0 YPOS=0/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module2" XPOS=48 YPOS=64 VALUE="ballMoveDirection"/>
+			<MODULE CLASS="String" TYPE="Divide3Values" NAME="module3" XPOS=128 YPOS=64/>
+			<MODULE CLASS="String" TYPE="Merge3Values" NAME="module4" XPOS=288 YPOS=32/>
+			<MODULE CLASS="Math" TYPE="Negative" NAME="module5" XPOS=216 YPOS=128/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module6" XPOS=448 YPOS=56 VALUE="ballMoveDirection"/>
+			<ROUTE OUT="module3.0" IN="module4.0"/>
+			<ROUTE OUT="module3.1" IN="module5.0"/>
+			<ROUTE OUT="module3.2" IN="module4.2"/>
+			<ROUTE OUT="module5.0" IN="module4.1"/>
+			<ROUTE OUT="module2.0" IN="module3.0"/>
+			<ROUTE OUT="module4.0" IN="module6.1"/>
+			<ROUTE OUT="module1.0" IN="module6.E"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Collision" TYPE="USER" OPTION="ICO:RIGHT:0.1">
+		<DIAGRAM NAME="ChangeDirection" XPOS=74 YPOS=553 WIDTH=491 HEIGHT=240>
+			<MODULE CLASS="System" TYPE="Collision" NAME="module1" XPOS=0 YPOS=0/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module2" XPOS=48 YPOS=64 VALUE="ballMoveDirection"/>
+			<MODULE CLASS="String" TYPE="Divide3Values" NAME="module3" XPOS=128 YPOS=64/>
+			<MODULE CLASS="String" TYPE="Merge3Values" NAME="module4" XPOS=280 YPOS=64/>
+			<MODULE CLASS="Math" TYPE="Negative" NAME="module5" XPOS=208 YPOS=48/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module6" XPOS=384 YPOS=64 VALUE="ballMoveDirection"/>
+			<ROUTE OUT="module2.0" IN="module3.0"/>
+			<ROUTE OUT="module4.0" IN="module6.1"/>
+			<ROUTE OUT="module3.1" IN="module4.1"/>
+			<ROUTE OUT="module3.2" IN="module4.2"/>
+			<ROUTE OUT="module5.0" IN="module4.0"/>
+			<ROUTE OUT="module3.0" IN="module5.0"/>
+			<ROUTE OUT="module1.0" IN="module6.E"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Collision" TYPE="USER" OPTION="ICO:LEFT:0.1">
+		<DIAGRAM NAME="ChangeDirection" XPOS=304 YPOS=549 WIDTH=477 HEIGHT=233>
+			<MODULE CLASS="System" TYPE="Collision" NAME="module1" XPOS=0 YPOS=0/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module2" XPOS=48 YPOS=64 VALUE="ballMoveDirection"/>
+			<MODULE CLASS="String" TYPE="Divide3Values" NAME="module3" XPOS=128 YPOS=64/>
+			<MODULE CLASS="String" TYPE="Merge3Values" NAME="module4" XPOS=280 YPOS=64/>
+			<MODULE CLASS="Math" TYPE="Negative" NAME="module5" XPOS=208 YPOS=48/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module6" XPOS=384 YPOS=64 VALUE="ballMoveDirection"/>
+			<ROUTE OUT="module2.0" IN="module3.0"/>
+			<ROUTE OUT="module4.0" IN="module6.1"/>
+			<ROUTE OUT="module3.1" IN="module4.1"/>
+			<ROUTE OUT="module3.2" IN="module4.2"/>
+			<ROUTE OUT="module5.0" IN="module4.0"/>
+			<ROUTE OUT="module3.0" IN="module5.0"/>
+			<ROUTE OUT="module1.0" IN="module6.E"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Collision" TYPE="USER" OPTION="ICO:BOTTOM:0.1">
+		<DIAGRAM NAME="ChangeDirection" XPOS=318 YPOS=409 WIDTH=502 HEIGHT=240>
+			<MODULE CLASS="System" TYPE="Collision" NAME="module1" XPOS=0 YPOS=0/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module2" XPOS=48 YPOS=64 VALUE="ballMoveDirection"/>
+			<MODULE CLASS="String" TYPE="Divide3Values" NAME="module3" XPOS=128 YPOS=64/>
+			<MODULE CLASS="String" TYPE="Merge3Values" NAME="module4" XPOS=280 YPOS=64/>
+			<MODULE CLASS="Math" TYPE="Negative" NAME="module5" XPOS=208 YPOS=64/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module6" XPOS=384 YPOS=64 VALUE="ballMoveDirection"/>
+			<ROUTE OUT="module3.0" IN="module4.0"/>
+			<ROUTE OUT="module3.1" IN="module5.0"/>
+			<ROUTE OUT="module3.2" IN="module4.2"/>
+			<ROUTE OUT="module5.0" IN="module4.1"/>
+			<ROUTE OUT="module2.0" IN="module3.0"/>
+			<ROUTE OUT="module4.0" IN="module6.1"/>
+			<ROUTE OUT="module1.0" IN="module6.E"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Collision" TYPE="USER" OPTION="ICO:NEAR:0.1">
+		<DIAGRAM NAME="ChangeDirection" XPOS=287 YPOS=647 WIDTH=530 HEIGHT=240>
+			<MODULE CLASS="System" TYPE="Collision" NAME="module1" XPOS=0 YPOS=0/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module2" XPOS=48 YPOS=64 VALUE="ballMoveDirection"/>
+			<MODULE CLASS="String" TYPE="Divide3Values" NAME="module3" XPOS=128 YPOS=64/>
+			<MODULE CLASS="String" TYPE="Merge3Values" NAME="module4" XPOS=280 YPOS=64/>
+			<MODULE CLASS="Math" TYPE="Negative" NAME="module5" XPOS=208 YPOS=96/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module6" XPOS=384 YPOS=64 VALUE="ballMoveDirection"/>
+			<ROUTE OUT="module2.0" IN="module3.0"/>
+			<ROUTE OUT="module4.0" IN="module6.1"/>
+			<ROUTE OUT="module3.2" IN="module5.0"/>
+			<ROUTE OUT="module3.0" IN="module4.0"/>
+			<ROUTE OUT="module5.0" IN="module4.2"/>
+			<ROUTE OUT="module3.1" IN="module4.1"/>
+			<ROUTE OUT="module1.0" IN="module6.E"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Collision" TYPE="USER" OPTION="ICO:FAR:0.1">
+		<DIAGRAM NAME="ChangeDirection" XPOS=218 YPOS=721 WIDTH=551 HEIGHT=240>
+			<MODULE CLASS="System" TYPE="Collision" NAME="module1" XPOS=0 YPOS=0/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module2" XPOS=48 YPOS=64 VALUE="ballMoveDirection"/>
+			<MODULE CLASS="String" TYPE="Divide3Values" NAME="module3" XPOS=128 YPOS=64/>
+			<MODULE CLASS="String" TYPE="Merge3Values" NAME="module4" XPOS=280 YPOS=64/>
+			<MODULE CLASS="Math" TYPE="Negative" NAME="module5" XPOS=208 YPOS=96/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module6" XPOS=384 YPOS=64 VALUE="ballMoveDirection"/>
+			<ROUTE OUT="module2.0" IN="module3.0"/>
+			<ROUTE OUT="module4.0" IN="module6.1"/>
+			<ROUTE OUT="module3.2" IN="module5.0"/>
+			<ROUTE OUT="module3.0" IN="module4.0"/>
+			<ROUTE OUT="module5.0" IN="module4.2"/>
+			<ROUTE OUT="module3.1" IN="module4.1"/>
+			<ROUTE OUT="module1.0" IN="module6.E"/>
+		</DIAGRAM>
+	</EVENT>
+</CBF>

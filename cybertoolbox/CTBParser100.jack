@@ -1,0 +1,368 @@
+options {
+  STATIC = false;
+  LOOKAHEAD = 1;
+  DEBUG_PARSER = false;
+  ERROR_REPORTING = true;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  JAVA_UNICODE_ESCAPE = false;
+  UNICODE_INPUT = false;
+}
+
+PARSER_BEGIN(CTBParser100)
+
+import java.util.Stack;
+
+public class CTBParser100 extends CTBParser {
+}
+
+PARSER_END(CTBParser100)
+
+///////////////////////////////////////////////
+//	SKIP
+///////////////////////////////////////////////
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <COMMENT : "#" (~["\n", "\r"])* ("\n" | "\r\n") >
+}
+
+///////////////////////////////////////////////
+//	TOKEN
+///////////////////////////////////////////////
+
+TOKEN :
+{
+	< Event			: "Event" >
+|	< Diagram		: "Diagram" >
+|	< Module		: "Module" >
+|	< Name			: "name" >
+|	< Option		: "option" >
+|	< Class			: "class" >
+|	< Type			: "type" >
+|	< Pos			: "pos" >
+|	< Size			: "size" >
+|	< Value			: "value" >
+|	< Dataflow	: "Dataflow" >
+|	< To				: "to" >
+}
+
+///////////////////////////////////////////////
+//	StringToken
+///////////////////////////////////////////////
+
+String StringToken() :
+{
+	Token	t;
+}
+{
+	t=<STRING>
+		{
+			return t.image.substring(1, t.image.length()-1);
+		}
+}
+
+///////////////////////////////////////////////
+//	IntegerToken
+///////////////////////////////////////////////
+
+int IntegerToken() :
+{
+	Token t;
+}
+{
+	t=<NUMBER>
+		{
+			return Integer.parseInt(t.image);
+		}
+}
+
+///////////////////////////////////////////////
+//	Event
+///////////////////////////////////////////////
+
+void EventElement() :
+{
+	String	value;
+}
+{
+	<Name> value=StringToken()	
+		{
+			getCurrentEvent().setName(value);
+		}
+|	<Option> value=StringToken()	
+		{
+			getCurrentEvent().setOptionString(value);
+		}
+|	<Type> value=StringToken()	
+		{
+			getCurrentEvent().setAttribute(value);
+		}
+|	Diagram()
+}
+
+void EventID() :
+{}
+{
+	<Event>
+		{
+			Event event = new Event();
+			event.setWorld(getWorld());
+			addEvent(event);
+			pushObject(event);
+		}
+}
+
+void Event() :
+{}
+{
+	EventID() "{" (EventElement())* "}"
+		{
+			Event	event = getCurrentEvent();
+			
+			String	name					= event.getName();
+			String	optionString		= event.getOptionString();
+			int		attribute			= event.getAttribute();
+			
+			EventType eventType = null;
+			
+			switch (attribute) {
+			case EventType.ATTRIBUTE_SYSTEM:
+				{
+					eventType = getWorld().getSystemEventType(name);
+				}
+				break;
+			case EventType.ATTRIBUTE_USER:
+				{
+					eventType = getWorld().getUserEventType(name);
+					event.setOptionString(optionString);
+				}
+				break;
+			default: // case EventType.ATTRIBUTE_NONE:
+				{
+					if (optionString != null) {
+						eventType = getWorld().getUserEventType(name);
+						event.setOptionString(optionString);
+					}
+					else
+						eventType = getWorld().getSystemEventType(name);
+				}
+				break;
+			}
+				
+			event.setEventType(eventType);
+			
+			popObject();
+		}
+}
+
+///////////////////////////////////////////////
+//	Diagram
+///////////////////////////////////////////////
+
+void DiagramElement() :
+{
+	String	value;
+	int		x, y;
+}
+{
+	<Name> value=StringToken()	
+		{
+			getCurrentDiagram().setName(value);
+		}
+|	<Pos> x=IntegerToken() y=IntegerToken()	
+		{
+			getCurrentDiagram().setPosition(x, y);
+		}
+|	<Size> x=IntegerToken() y=IntegerToken()	
+		{
+			getCurrentDiagram().setWidth(x);
+			getCurrentDiagram().setHeight(y);
+		}
+|	Module()
+|	Dataflow()
+}
+
+void DiagramID() :
+{}
+{
+	<Diagram>
+		{
+			Event event = getCurrentEvent();
+			Diagram dgm = new Diagram();
+			event.addDiagram(dgm);
+			pushObject(dgm);
+		}
+}
+
+void Diagram() :
+{}
+{
+	DiagramID() "{" (DiagramElement())* "}"
+		{
+			popObject();
+		}
+}
+
+///////////////////////////////////////////////
+//	Module
+///////////////////////////////////////////////
+
+void ModuleElement() :
+{
+	String	value;
+	int		x, y;
+}
+{
+	<Class> value=StringToken()	
+		{
+			getCurrentModuleInfo().setClassName(value);
+		}
+|	<Type> value=StringToken()	
+		{
+			getCurrentModuleInfo().setTypeName(value);
+		}
+|	<Name> value=StringToken()	
+		{
+			getCurrentModuleInfo().setName(value);
+		}
+|	<Value> value=StringToken()	
+		{
+			getCurrentModuleInfo().setValue(value);
+		}
+|	<Pos> x=IntegerToken() y=IntegerToken()	
+		{
+			getCurrentModuleInfo().setPosition(x, y);
+		}
+}
+
+void ModuleID() :
+{}
+{
+	<Module>
+		{
+			ModuleInfo moduleInfo = new ModuleInfo();
+			pushObject(moduleInfo);
+		}
+}
+
+void Module() :
+{}
+{
+	ModuleID() "{" (ModuleElement())* "}"
+		{
+			ModuleInfo moduleInfo = getCurrentModuleInfo();
+			ModuleType modType = getWorld().getModuleType(moduleInfo.getClassName(), moduleInfo.getTypeName());
+
+			popObject();
+			
+			if (modType != null) {
+				Diagram dgm = getCurrentDiagram();
+				Module module = dgm.addModule(modType);
+				if (module != null) {
+					module.setName(moduleInfo.getName());
+					module.setValue(moduleInfo.getValue());
+					module.setPosition(moduleInfo.getXPosition(), moduleInfo.getYPosition());
+				}
+			}
+			else
+				Debug.warning("Coundn't find the module type (" + moduleInfo.getClassName() + ", " + moduleInfo.getTypeName() + ")");
+		}
+}
+
+///////////////////////////////////////////////
+//	Dataflow
+///////////////////////////////////////////////
+
+String ModuleNameToken() :
+{
+	Token	t;
+}
+{
+	t=<ID>
+		{
+			return t.image;
+		}
+}
+
+String NodeNameToken() :
+{
+	Token	t;
+}
+{
+	t=<ID>
+		{
+			return t.image;
+		}
+}
+
+int NodeNumberToken() :
+{
+	int	number;
+}
+{
+	number=IntegerToken()	
+		{
+			return number;
+		}
+|	"E"	
+		{
+			return -1;
+		}
+}
+
+void Dataflow() :
+{
+	String	OutModuleName;
+	String	OutNodeName;
+	String	InModuleName;
+	String	InNodeName;
+	int		InNodeNumber;
+	int		OutNodeNumber;
+}
+{
+	LOOKAHEAD(4) <Dataflow> OutModuleName=ModuleNameToken() "." OutNodeNumber=NodeNumberToken() <To> InModuleName=ModuleNameToken() "." InNodeNumber=NodeNumberToken() 
+		{
+			getCurrentDiagram().addDataflow(OutModuleName, OutNodeNumber, InModuleName, InNodeNumber);
+		}
+|
+	LOOKAHEAD(4) <Dataflow> OutModuleName=ModuleNameToken() "." OutNodeName=NodeNameToken() <To> InModuleName=ModuleNameToken() "." InNodeName=NodeNameToken() 
+		{
+			getCurrentDiagram().addDataflow(OutModuleName, OutNodeName, InModuleName, InNodeName);
+		}
+}
+
+///////////////////////////////////////////////
+//
+//	General Tokens
+//
+///////////////////////////////////////////////
+
+TOKEN :
+{
+	< NUMBER			:	(["+","-"])?( ["0"-"9"] )+ >
+|	< ID				:	["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9", "_"] )* >
+|
+	< STRING			:
+      "\""
+      (   (~["\"","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            )
+          )
+      )*
+      "\""
+	>
+}
+
+void Input() :
+{}
+{
+  (Event())* <EOF>
+}

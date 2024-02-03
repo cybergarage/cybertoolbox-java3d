@@ -1,0 +1,55 @@
+/*----------------------------------------------------------------
+*
+*	CyberToolBox
+*
+*	Copyright (C) Satoshi Konno 1998-1999
+*
+*	File:	ViewpointGetFOV.java
+*
+----------------------------------------------------------------*/
+
+import cv97.*;
+import cv97.node.*;
+
+public class ViewpointGetFOV extends Module {
+
+	private SceneGraph		sg;
+	private ViewpointNode	viewNode;
+
+	public void initialize() {
+		sg = getSceneGraph();
+		
+		String viewName = getStringValue();
+		if (viewName != null)
+			viewNode = sg.findViewpointNode(viewName);
+		else
+			viewNode = null;
+	}
+
+	public void shutdown() {
+	}
+
+	public void processData(ModuleNode inNode[], ModuleNode exeNode) {
+		
+		if (inNode[0].isConnected() == true) {
+			String viewName = inNode[0].getStringValue();
+			if (viewName != null) {
+				viewNode = sg.findViewpointNode(viewName);
+				if (viewNode != null) 
+					setValue(viewName);
+				else
+					setValue("");
+			}
+			else {
+				viewNode = null;
+				setValue("");
+			}
+		}
+
+		if (viewNode != null) 
+			sendOutNodeValue(0, viewNode.getFieldOfView());
+		else
+			sendOutNodeValue(0, "No Viewpoint");
+	}
+
+}

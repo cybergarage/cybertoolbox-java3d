@@ -1,0 +1,110 @@
+#VRML V2.0 utf8
+DEF earth Transform {
+	translation 0.0 0.0 0.0
+	rotation 0.0 1.0 0.0 10.6
+	scale 1.0 1.0 1.0
+	scaleOrientation 0.0 0.0 1.0 0.0
+	center 0.0 0.0 0.0
+	children [
+		Shape {
+			appearance Appearance {
+				material Material {
+					diffuseColor 0.8 0.8 0.8
+					ambientIntensity 0.2
+					specularColor 0.0 0.0 0.0
+					emissiveColor 0.0 0.0 0.0
+					shininess 0.2
+					transparency 0.0
+				}
+				texture ImageTexture {
+					repeatS TRUE
+					repeatT TRUE
+					url [
+						"earth.jpg"
+					]
+				}
+			}
+			geometry Sphere {
+				radius 5.0
+			}
+		}
+	]
+}
+DEF moon Transform {
+	translation 5.5366526 0.0 -2.3120291
+	rotation 0.0 0.0 1.0 0.0
+	scale 1.0 1.0 1.0
+	scaleOrientation 0.0 0.0 1.0 0.0
+	center 0.0 0.0 0.0
+	children [
+		Shape {
+			appearance Appearance {
+				material Material {
+					diffuseColor 0.8 0.8 0.8
+					ambientIntensity 0.2
+					specularColor 0.0 0.0 0.0
+					emissiveColor 0.0 0.0 0.0
+					shininess 0.2
+					transparency 0.0
+				}
+			}
+			geometry Sphere {
+				radius 1.0
+			}
+		}
+	]
+}
+Viewpoint {
+	fieldOfView 0.785398
+	jump TRUE
+	position 0.0 0.0 20.848566
+	orientation 0.0 0.0 1.0 0.0
+	description ""
+}
+NavigationInfo {
+	visibilityLimit 0.0
+	headlight TRUE
+	speed 1.0
+	type [
+	]
+	avatarSize [
+	]
+}
+Background {
+	groundColor [
+	]
+	skyColor [
+		0.0 0.0 0.0
+	]
+	groundAngle [
+	]
+	skyAngle [
+	]
+	frontUrl [
+	]
+	backUrl [
+	]
+	leftUrl [
+	]
+	rightUrl [
+	]
+	topUrl [
+	]
+	bottomUrl [
+	]
+}
+PointLight {
+	on TRUE
+	intensity 1.0
+	ambientIntensity 0.0
+	color 1.0 1.0 1.0
+	location 0.0 0.0 100.0
+	radius 100.0
+	attenuation 1.0 0.0 0.0
+}
+DEF CTB_BEHAVIRO_INFO WorldInfo {
+	title "CyberToolbox Behavior Format V1.0"
+	info [
+		"earthMoon.cbf"
+	]
+}

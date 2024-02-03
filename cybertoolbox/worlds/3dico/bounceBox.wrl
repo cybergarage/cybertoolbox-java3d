@@ -1,0 +1,274 @@
+#VRML V2.0 utf8
+Background {
+	groundColor [
+	]
+	skyColor [
+		0.0 0.0 0.25098
+	]
+	groundAngle [
+	]
+	skyAngle [
+	]
+	frontUrl [
+	]
+	backUrl [
+	]
+	leftUrl [
+	]
+	rightUrl [
+	]
+	topUrl [
+	]
+	bottomUrl [
+	]
+}
+DEF BOX Transform {
+	translation 0.0 0.0 0.0
+	rotation 0.0 1.0 0.0 0.0
+	scale 1.0 1.0 1.0
+	scaleOrientation 0.0 0.0 1.0 0.0
+	center 0.0 0.0 0.0
+	children [
+		DEF FAR Shape {
+			appearance Appearance {
+				material Material {
+					diffuseColor 0.8 0.8 0.8
+					ambientIntensity 0.2
+					specularColor 0.0 0.0 0.0
+					emissiveColor 0.0 0.0 0.0
+					shininess 0.2
+					transparency 0.0
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid FALSE
+				coord Coordinate {
+					point [
+						-100.0 -100.0 -100.0,
+						100.0 -100.0 -100.0,
+						100.0 100.0 -100.0,
+						-100.0 100.0 -100.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3, -1
+				]
+			}
+		}
+		DEF RIGHT Shape {
+			appearance Appearance {
+				material Material {
+					diffuseColor 0.8 0.8 0.8
+					ambientIntensity 0.2
+					specularColor 0.0 0.0 0.0
+					emissiveColor 0.0 0.0 0.0
+					shininess 0.2
+					transparency 0.0
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid FALSE
+				coord Coordinate {
+					point [
+						100.0 -100.0 -100.0,
+						100.0 -100.0 100.0,
+						100.0 100.0 100.0,
+						100.0 100.0 -100.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3, -1
+				]
+			}
+		}
+		DEF TOP Shape {
+			appearance Appearance {
+				material Material {
+					diffuseColor 0.8 0.8 0.8
+					ambientIntensity 0.2
+					specularColor 0.0 0.0 0.0
+					emissiveColor 0.0 0.0 0.0
+					shininess 0.2
+					transparency 0.0
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid FALSE
+				coord Coordinate {
+					point [
+						-100.0 100.0 -100.0,
+						100.0 100.0 -100.0,
+						100.0 100.0 100.0,
+						-100.0 100.0 100.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3, -1
+				]
+			}
+		}
+		DEF LEFT Shape {
+			appearance Appearance {
+				material Material {
+					diffuseColor 0.8 0.8 0.8
+					ambientIntensity 0.2
+					specularColor 0.0 0.0 0.0
+					emissiveColor 0.0 0.0 0.0
+					shininess 0.2
+					transparency 0.0
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid FALSE
+				coord Coordinate {
+					point [
+						-100.0 100.0 100.0,
+						-100.0 -100.0 100.0,
+						-100.0 -100.0 -100.0,
+						-100.0 100.0 -100.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3, -1
+				]
+			}
+		}
+		DEF NEAR Shape {
+			appearance Appearance {
+				material Material {
+					diffuseColor 0.8 0.8 0.8
+					ambientIntensity 0.2
+					specularColor 0.0 0.0 0.0
+					emissiveColor 0.0 0.0 0.0
+					shininess 0.2
+					transparency 0.0
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid FALSE
+				coord Coordinate {
+					point [
+						-100.0 100.0 100.0,
+						100.0 100.0 100.0,
+						100.0 -100.0 100.0,
+						-100.0 -100.0 100.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3, -1
+				]
+			}
+		}
+		DEF BOTTOM Shape {
+			appearance Appearance {
+				material Material {
+					diffuseColor 0.8 0.8 0.8
+					ambientIntensity 0.2
+					specularColor 0.0 0.0 0.0
+					emissiveColor 0.0 0.0 0.0
+					shininess 0.2
+					transparency 0.0
+				}
+			}
+			geometry IndexedFaceSet {
+				ccw TRUE
+				colorPerVertex FALSE
+				normalPerVertex TRUE
+				convex TRUE
+				creaseAngle 0.0
+				solid FALSE
+				coord Coordinate {
+					point [
+						100.0 -100.0 100.0,
+						100.0 -100.0 -100.0,
+						-100.0 -100.0 -100.0,
+						-100.0 -100.0 100.0
+					]
+				}
+				coordIndex [
+					0, 1, 2, 3, -1
+				]
+			}
+		}
+	]
+}
+DEF BALL Transform {
+	translation 42.228485 48.319523 14.982453
+	rotation 0.6098207 0.57250434 0.5480488 1.6
+	scale 1.0 1.0 1.0
+	scaleOrientation 0.0 0.0 1.0 0.0
+	center 0.0 0.0 0.0
+	children [
+		DEF BALL Shape {
+			appearance Appearance {
+				material Material {
+					diffuseColor 1.0 0.0 0.0
+					ambientIntensity 0.2
+					specularColor 0.0 0.0 0.0
+					emissiveColor 0.0 0.0 0.0
+					shininess 0.2
+					transparency 0.0
+				}
+			}
+			geometry Box {
+				size 30.0 30.0 30.0
+			}
+		}
+	]
+}
+Viewpoint {
+	fieldOfView 0.785398
+	jump TRUE
+	position 0.0 0.0 417.473
+	orientation 0.0 0.0 1.0 0.0
+	description ""
+}
+NavigationInfo {
+	visibilityLimit 0.0
+	headlight FALSE
+	speed 100.0
+	type [
+	]
+	avatarSize [
+	]
+}
+DEF CTB_BEHAVIRO_INFO WorldInfo {
+	title "CyberToolbox Behavior Format V1.0"
+	info [
+		"bounceBox.cbf"
+	]
+}
+PointLight {
+	on TRUE
+	intensity 1.0
+	ambientIntensity 0.0
+	color 1.0 1.0 1.0
+	location 80.0 80.0 110.0
+	radius 100.0
+	attenuation 1.0 0.0 0.0
+}

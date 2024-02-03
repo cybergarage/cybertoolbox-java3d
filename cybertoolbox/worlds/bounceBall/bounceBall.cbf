@@ -1,0 +1,27 @@
+<CBF VERSION="200">
+	<EVENT NAME="Start" TYPE="SYSTEM">
+		<DIAGRAM NAME="diagram0" XPOS=428 YPOS=210 WIDTH=320 HEIGHT=240>
+			<MODULE CLASS="Interpolator" TYPE="Play" NAME="module1" XPOS=130 YPOS=120 VALUE="ballPosInterp,0.0,0.1,0.1,true,true"/>
+			<MODULE CLASS="String" TYPE="Bool" NAME="module2" XPOS=50 YPOS=56 VALUE="true"/>
+			<ROUTE OUT="module2.0" IN="module1.E"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Pickup" TYPE="USER" OPTION="ballShape">
+		<DIAGRAM NAME="diagram0" XPOS=126 YPOS=454 WIDTH=470 HEIGHT=254>
+			<MODULE CLASS="System" TYPE="Pickup" NAME="module1" XPOS=0 YPOS=0/>
+			<MODULE CLASS="Interpolator" TYPE="Pose" NAME="module2" XPOS=320 YPOS=128 VALUE="ballPosInterp"/>
+			<MODULE CLASS="Interpolator" TYPE="Play" NAME="module3" XPOS=320 YPOS=64 VALUE="ballPosInterp,0.0,0.1,0.1,false,false"/>
+			<MODULE CLASS="Interpolator" TYPE="IsPlaying" NAME="module4" XPOS=32 YPOS=64 VALUE="ballPosInterp"/>
+			<MODULE CLASS="Boolean" TYPE="And" NAME="module5" XPOS=160 YPOS=96/>
+			<MODULE CLASS="Boolean" TYPE="Not" NAME="module6" XPOS=160 YPOS=32/>
+			<MODULE CLASS="Boolean" TYPE="And" NAME="module7" XPOS=232 YPOS=32/>
+			<ROUTE OUT="module1.0" IN="module5.0"/>
+			<ROUTE OUT="module4.0" IN="module5.1"/>
+			<ROUTE OUT="module5.0" IN="module2.E"/>
+			<ROUTE OUT="module1.0" IN="module7.0"/>
+			<ROUTE OUT="module6.0" IN="module7.1"/>
+			<ROUTE OUT="module4.0" IN="module6.0"/>
+			<ROUTE OUT="module7.0" IN="module3.E"/>
+		</DIAGRAM>
+	</EVENT>
+</CBF>

@@ -1,0 +1,255 @@
+#CBF V1.0 ascii
+Event {
+	name   "Start"
+	type   "SYSTEM"
+}
+Event {
+	name   "Frame"
+	type   "SYSTEM"
+}
+Event {
+	name   "Mouse"
+	type   "SYSTEM"
+}
+Event {
+	name   "Keyboard"
+	type   "SYSTEM"
+}
+Event {
+	name   "Pickup"
+	type   "SYSTEM"
+}
+Event {
+	name   "Keyboard"
+	type   "USER"
+	option "Up"
+	Diagram {
+		name "forward"
+		pos  211 214
+		size 484 359
+		Module {
+			class "System"
+			type  "Keyboard"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Viewpoint"
+			type  "GetOrientation"
+			name  "module2"
+			pos   64 128
+			value "view"
+		}
+		Module {
+			class "Viewpoint"
+			type  "SetPosition"
+			name  "module3"
+			pos   320 128
+			value "view"
+		}
+		Module {
+			class "Viewpoint"
+			type  "GetPosition"
+			name  "module4"
+			pos   192 160
+			value "view"
+		}
+		Module {
+			class "Numeric"
+			type  "Add"
+			name  "module5"
+			pos   256 128
+		}
+		Module {
+			class "Geometry"
+			type  "Rotate"
+			name  "module6"
+			pos   128 96
+		}
+		Module {
+			class "String"
+			type  "Direction"
+			name  "module7"
+			pos   64 64
+			value "0.0,0.0,-1.0"
+		}
+		Module {
+			class "Filter"
+			type  "Mul"
+			name  "module8"
+			pos   192 96
+			value "1"
+		}
+		Dataflow module4.0 to module5.1
+		Dataflow module5.0 to module3.1
+		Dataflow module2.0 to module6.1
+		Dataflow module7.0 to module6.0
+		Dataflow module6.0 to module8.0
+		Dataflow module8.0 to module5.0
+		Dataflow module1.0 to module3.E
+	}
+}
+Event {
+	name   "Keyboard"
+	type   "USER"
+	option "Down"
+	Diagram {
+		name "backward"
+		pos  217 206
+		size 481 352
+		Module {
+			class "System"
+			type  "Keyboard"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Viewpoint"
+			type  "GetOrientation"
+			name  "module2"
+			pos   64 128
+			value "view"
+		}
+		Module {
+			class "Viewpoint"
+			type  "SetPosition"
+			name  "module3"
+			pos   320 128
+			value "view"
+		}
+		Module {
+			class "Viewpoint"
+			type  "GetPosition"
+			name  "module4"
+			pos   192 160
+			value "view"
+		}
+		Module {
+			class "Numeric"
+			type  "Add"
+			name  "module5"
+			pos   256 128
+		}
+		Module {
+			class "Geometry"
+			type  "Rotate"
+			name  "module6"
+			pos   128 96
+		}
+		Module {
+			class "String"
+			type  "Direction"
+			name  "module7"
+			pos   64 64
+			value "0.0,0.0,1.0"
+		}
+		Module {
+			class "Filter"
+			type  "Mul"
+			name  "module8"
+			pos   192 96
+			value "1"
+		}
+		Dataflow module4.0 to module5.1
+		Dataflow module5.0 to module3.1
+		Dataflow module2.0 to module6.1
+		Dataflow module7.0 to module6.0
+		Dataflow module6.0 to module8.0
+		Dataflow module8.0 to module5.0
+		Dataflow module1.0 to module3.E
+	}
+}
+Event {
+	name   "Keyboard"
+	type   "USER"
+	option "Left"
+	Diagram {
+		name "turnLeft"
+		pos  115 318
+		size 351 275
+		Module {
+			class "System"
+			type  "Keyboard"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Viewpoint"
+			type  "SetOrientation"
+			name  "module2"
+			pos   224 96
+			value "view"
+		}
+		Module {
+			class "Viewpoint"
+			type  "GetOrientation"
+			name  "module3"
+			pos   32 64
+			value "view"
+		}
+		Module {
+			class "String"
+			type  "Rotation"
+			name  "module4"
+			pos   29 126
+			value "0.0,1.0,0.0,0.02"
+		}
+		Module {
+			class "Numeric"
+			type  "Add"
+			name  "module5"
+			pos   128 96
+		}
+		Dataflow module1.0 to module2.E
+		Dataflow module3.0 to module5.0
+		Dataflow module4.0 to module5.1
+		Dataflow module5.0 to module2.1
+	}
+}
+Event {
+	name   "Keyboard"
+	type   "USER"
+	option "Right"
+	Diagram {
+		name "rightTurn"
+		pos  302 252
+		size 320 240
+		Module {
+			class "System"
+			type  "Keyboard"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Viewpoint"
+			type  "SetOrientation"
+			name  "module2"
+			pos   224 96
+			value "view"
+		}
+		Module {
+			class "Viewpoint"
+			type  "GetOrientation"
+			name  "module3"
+			pos   32 64
+			value "view"
+		}
+		Module {
+			class "String"
+			type  "Rotation"
+			name  "module4"
+			pos   29 126
+			value "0.0,1.0,0.0,-0.02"
+		}
+		Module {
+			class "Numeric"
+			type  "Add"
+			name  "module5"
+			pos   128 96
+		}
+		Dataflow module3.0 to module5.0
+		Dataflow module4.0 to module5.1
+		Dataflow module5.0 to module2.1
+		Dataflow module1.0 to module2.E
+	}
+}

@@ -1,0 +1,4549 @@
+options {
+  STATIC = false;
+  LOOKAHEAD = 1;
+  DEBUG_PARSER = false;
+  ERROR_REPORTING = true;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  JAVA_UNICODE_ESCAPE = false;
+  UNICODE_INPUT = false;
+}
+
+PARSER_BEGIN(X3DParser)
+package cv97.parser.x3d;
+
+import java.io.*;
+import cv97.*;
+import cv97.field.*;
+import cv97.node.*;
+import cv97.util.*;
+import cv97.route.*;
+import cv97.xml.*;
+
+public class X3DParser {
+
+	public NodeList	mNodeList		= new NodeList();
+	public LinkedList	mNodeStackList	= new LinkedList();
+	public int			mIndentLevel	= 0;
+
+	boolean	bvalue;
+
+	public X3DParser () {
+	}
+
+	public NodeList getNodeList() {
+		return mNodeList;		
+	}
+
+	public Node getRootNode() {
+		return (Node)mNodeList.getRootNode();
+	}
+
+	public Node getNodes() {
+		return (Node)mNodeList.getNodes();
+	}
+
+	public void addNode(Node node) {
+		Node parentNode = getCurrentNode();
+		if (parentNode == null)
+			mNodeList.addNode(node);
+		else
+			parentNode.addChildNode(node);
+
+		node.setParentNode(parentNode);
+	}
+
+	public void clearNodes() {
+		mNodeList.deleteNodes();		
+	}
+
+	////////////////////////////////////////////////
+	//	find node
+	////////////////////////////////////////////////
+
+	public Node findNodeByType(String typeName) {
+		Node rootNode = getRootNode();
+		return rootNode.nextTraversalByType(typeName);
+	}
+
+	public Node findNodeByName(String name) {
+		Node rootNode = getRootNode();
+		return rootNode.nextTraversalByName(name);
+	}
+
+	///////////////////////////////////////////////
+	//	Praser action
+	///////////////////////////////////////////////
+
+	public void PushNode(Node node)
+	{
+		X3DStackNode parserNode = new X3DStackNode(node);
+		mNodeStackList.addNode(parserNode);
+	}
+
+	public Node PopNode()
+	{
+		X3DStackNode lastNode = (X3DStackNode)mNodeStackList.getLastNode(); 
+		lastNode.remove();
+		return lastNode.getObject();
+	}
+
+	public Node getCurrentNode() {
+		X3DStackNode lastNode = (X3DStackNode)mNodeStackList.getLastNode(); 
+		if (lastNode == null)
+			return null;
+		else
+			return lastNode.getObject();
+	}
+
+	///////////////////////////////////////////////
+	//	Instance Node
+	///////////////////////////////////////////////
+	
+	public void setCurrentNodeAsInstance(String nodeName)
+	{
+		Node currNode = getCurrentNode();
+		
+		if (currNode != null)
+			currNode.remove();
+		
+		PopNode();
+				
+		Node defNode = findNodeByName(nodeName);
+
+		Node instanceNode = null;
+		if (defNode != null) {
+			instanceNode = defNode.createInstanceNode();
+			addNode(instanceNode);
+		}
+				
+		PushNode(instanceNode);
+	}
+	
+	///////////////////////////////////////////////
+	//	ROUTE INFO
+	///////////////////////////////////////////////
+
+	public RouteInfo routeInfo = null;
+
+	public void setRouteInfo(RouteInfo info)
+	{
+		routeInfo = info;
+	}
+	
+	public RouteInfo getRouteInfo()
+	{
+		return routeInfo;
+	}
+
+	///////////////////////////////////////////////
+	//	ROUTE
+	///////////////////////////////////////////////
+
+	public LinkedList	mRouteList		= new LinkedList();
+
+	public Route getRoutes() {
+		return (Route)mRouteList.getNodes();
+	}
+
+	public Route getRoute(Node eventOutNode, Field eventOutField, Node eventInNode, Field eventInField)
+	{
+		for (Route route=getRoutes(); route!=null; route=route.next()) {
+			if (eventOutNode == route.getEventOutNode() && eventOutField == route.getEventOutField() &&
+				eventInNode == route.getEventInNode() && eventInField == route.getEventInField() ) {
+				return route;
+			}
+		}
+		return null;
+	}
+
+	public void addRoute(Route route) {
+		if (route.getEventOutNode() == route.getEventInNode())
+			return;
+		if (getRoute(route.getEventOutNode(), route.getEventOutField(), route.getEventInNode(), route.getEventInField()) != null)
+			return;
+		mRouteList.addNode(route);
+	}
+
+	public void addRoute(String eventOutNodeName, String eventOutFieldName, String eventInNodeName, String eventInFieldName)
+	{
+		Node eventInNode = findNodeByName(eventInNodeName);
+		Node eventOutNode = findNodeByName(eventOutNodeName);
+
+		Field eventOutField = null;
+
+		if (eventOutNode != null) {
+			try {
+				eventOutField = ((Node)eventOutNode).getEventOut(eventOutFieldName);
+			}
+			catch (InvalidEventOutException eventOutException) {
+				try {
+					eventOutField = eventOutNode.getExposedField(eventOutFieldName);
+				}
+				catch (InvalidExposedFieldException exposedFieldException) {}
+			}
+		}
+
+		Field eventInField = null;
+
+		if (eventInNode != null) {
+			try {
+				eventInField = eventInNode.getEventIn(eventInFieldName);
+			}
+			catch (InvalidEventInException eventInException) {
+				try {
+					eventInField = eventInNode.getExposedField(eventInFieldName);
+				}
+				catch (InvalidExposedFieldException exposedFieldException) {}
+			}
+		}
+
+		Route route = new Route(eventOutNode, eventOutField, eventInNode, eventInField);
+		addRoute(route);
+	}
+
+	public void addRoute(RouteInfo info)
+	{
+		addRoute(info.getFromNodeName(), info.getFromFieldName(), info.getToNodeName(), info.getToFieldName());
+	}
+	
+	public void deleteRoute(Node eventOutNode, Field eventOutField, Node eventInNode, Field eventInField)
+	{
+		Route route = getRoute(eventOutNode, eventOutField, eventInNode, eventInField);
+		if (route!=null)
+			route.remove();
+	}
+
+	public void deleteRoute(Route deleteRoute)
+	{
+		for (Route route=getRoutes(); route!=null; route=route.next()) {
+			if (deleteRoute == route) {
+				route.remove();
+				return;
+			}
+		}
+	}
+
+}
+
+PARSER_END(X3DParser)
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % FieldTypes "( Boolean | Booleans | Color | Colors | Float | Floats | Image |
+//                          Int | Ints | Rotation | Rotations | String | Strings | Time | Times | 
+//                          Vector3 | Vector3Array | Vector4 | Vector4Array )" >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+void FieldTypes() :
+{}
+{
+	Boolean()
+|	Booleans()
+|	Color()
+|	Colors()
+|	Float()
+|	Floats()
+|	Int()
+|	Ints()
+|	Rotation()
+|	Rotations()
+|	Time()
+|	Times()
+|	Vector3()
+|	Vector3Array()
+|	Vector4()
+|	Vector4Array()
+}
+*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % BehaviorLeafNodes " ColorInterpolator | CoordinateInterpolator | CylinderSensor |
+//                                NormalInterpolator | OrientationInterpolator | PlaneSensor | 
+//                                PositionInterpolator | ProximitySensor | ScalarInterpolator | 
+//                                Script | SphereSensor | TimeSensor | TouchSensor " >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void BehaviorLeafNodes() :
+{}
+{
+	ColorInterpolator()
+|	CoordinateInterpolator()
+|	CylinderSensor()
+|	NormalInterpolator()
+|	OrientationInterpolator()
+|	PlaneSensor()
+|	PositionInterpolator()
+|	ProximitySensor()
+|	ScalarInterpolator()
+|	Script()
+|	SphereSensor()
+|	TimeSensor()
+|	TouchSensor()
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % BindableNodes " Background | Fog | NavigationInfo | Viewpoint " >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void BindableNodes() :
+{}
+{
+	Background()
+|	Fog()
+|	NavigationInfo()
+|	Viewpoint()
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % CollisionProxyNodes " Anchor | Billboard | Group | Inline | LOD | Switch | Transform " >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CollisionProxyNodes() :
+{}
+{
+	Anchor()
+|	Billboard()
+|	Group()
+|	Inline()
+|	LOD()
+|	Switch()
+|	Transform()
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % GroupingNodes " Anchor | Billboard | Collision | Group | Inline | LOD | Switch | Transform " >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void GroupingNodes() :
+{}
+{
+	Anchor()
+|	Billboard()
+|	Collision()
+|	Group()
+|	Inline()
+|	LOD()
+|	Switch()
+|	Transform()
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % GeometryNodes " ( Box | Cone | Cylinder | ElevationGrid | Extrusion |
+//                              IndexedFaceSet | IndexedLineSet | PointSet | Sphere | Text ) " >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void GeometryNodes() :
+{}
+{
+	Box()
+|	Cone()
+|	Cylinder()
+|	ElevationGrid()
+|	Extrusion()
+|	IndexedFaceSet()
+|	IndexedLineSet()
+|	PointSet()
+|	Sphere()
+|	Text()
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % LightNodes " DirectionalLight | SpotLight | PointLight " >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void LightNodes() :
+{}
+{
+	DirectionalLight()
+|	SpotLight()
+|	PointLight()
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % TextureNodes " ImageTexture | MovieTexture | PixelTexture " >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void TextureNodes() :
+{}
+{
+	ImageTexture()
+|	MovieTexture()
+|	PixelTexture()
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % Appearances " ( ( Material?, (%TextureNodes;)?, TextureTransform? ) | 
+//                          ( (%TextureNodes;)?, Material?, TextureTransform? ) ) " >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Appearances() :
+{}
+{
+/*
+	LOOKAHEAD(3) ((Material())? (TextureNodes())? (TextureTransform())?)
+|	LOOKAHEAD(3) ((TextureNodes())? (Material())? (TextureTransform())?) 
+*/
+	(Material() | TextureNodes() | TextureTransform())*
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % SceneLeafNodes " Shape | Sound | WorldInfo | %LightNodes; " >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void SceneLeafNodes() :
+{}
+{
+	Shape()
+|	Sound()
+|	WorldInfo()
+|	LightNodes()
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % SceneNodes " (EXTERNPROTO-declare|PROTO-declare)*, 
+//                         ( %GroupingNodes; | %BindableNodes; | %BehaviorLeafNodes; | %LightNodes; | WorldInfo |
+//                         PROTO-instance )*, Route* " >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void SceneNodes() :
+{}
+{
+/*
+  (EXTERNPROTO_declare() | PROTO_declare())* 
+  (GroupingNodes() | BindableNodes() | BehaviorLeafNodes() | LightNodes() | WorldInfo() | PROTO_instance() )*
+  (Route())*
+*/
+  (GroupingNodes() | BindableNodes() | BehaviorLeafNodes() | LightNodes() | WorldInfo() )*
+  (Route())*
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % ChildrenNodes " %BehaviorLeafNodes; | %BindableNodes; | %GroupingNodes; | %SceneLeafNodes; " >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ChildrenNodes() :
+{}
+{
+	BehaviorLeafNodes()
+|	BindableNodes()
+|	GroupingNodes()
+|	SceneLeafNodes()
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ENTITY % Children  "( %ChildrenNodes; )* " 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Children() :
+{}
+{
+	(ChildrenNodes())*
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!--	X3D node is at top of tree.
+//  Three definitions are possible without/without/optional Scene tag:
+//
+//  <!ELEMENT X3D ( Scene ) >
+//  <!ELEMENT X3D ( %SceneNodes; ) >
+//  <!ELEMENT X3D ( ( %SceneNodes; ) | Scene ) >
+//
+//  Best:  single optional Header tag (similar to HTML's HEAD) and 
+//   Single required Scene tag together:
+//
+//  <!ELEMENT X3D    ( Header? , Scene ) >
+//  <!ELEMENT Header ( #PCDATA ) >
+//
+// -->
+//
+// <!ELEMENT X3D    ( Header? , Scene ) >
+//
+// <!ELEMENT Header ( #PCDATA ) >
+// <!ATTLIST Header
+//     status CDATA "reserved for future use" >
+//
+// <!ELEMENT Scene ( %SceneNodes; ) >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void X3D() :
+{}
+{
+//	Header()? Scene()
+	"<X3D>" (Scene())* "</X3D>"
+}
+
+void Header() :
+{}
+{
+	<STRING>
+}
+
+void Scene() :
+{}
+{
+	"<Scene>" SceneNodes() "</Scene>"
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//	XML Tag
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+String TagName() :
+{
+	Token	t;
+}
+{
+	t=<ID>
+		{
+			return new String(t.image);
+		}
+}
+
+String ElementName() :
+{
+	Token	t;
+}
+{
+	t=<ID>
+		{
+			return new String(t.image);
+		}
+}
+
+
+void XMLElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	name=ElementName() "=" value=FieldString()	
+		{
+			((XMLNode)getCurrentNode()).addElement(name, value);
+		}
+}
+
+void XMLBeginTag() :
+{
+	String	tagName;
+}
+{
+	"<" tagName=TagName()
+		{
+			XMLNode node = new XMLNode();
+			node.setName(tagName);
+			addNode(node);
+			PushNode(node);
+		}
+}
+
+void XMLEndTag() :
+{
+	String	tagName;
+}
+{
+	"/>"
+		{
+		}
+|">" (XMLNode())* "</" tagName=TagName() ">"
+		{
+		}
+}
+
+void XMLNode() :
+{}
+{
+	XMLBeginTag() (XMLElement())* XMLEndTag()
+		{
+			PopNode();
+		}
+}
+
+void X3DNode() :
+{}
+{
+	GroupingNodes()
+|	BindableNodes()
+|	BehaviorLeafNodes()
+|	LightNodes()
+|	WorldInfo()
+|	Route()
+}
+
+void XML() :
+{}
+{
+	(XMLNode() | X3D() | X3DNode())*
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//	Field String
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+String FieldString() :
+{
+	Token	t;
+}
+{
+	t=<STRING>
+		{
+			return t.image.substring(1, t.image.length()-1);
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//	Node Name
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+String NodeName() :
+{
+	Token	t;
+}
+{
+	t=<STRING>
+		{
+			return t.image.substring(1, t.image.length()-1);
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//	Common Tokens
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <COMMENT : "#" (~["\n", "\r"])* ("\n" | "\r\n") >
+}
+
+SKIP :
+{
+	<XML_HEADER		: "<?" (~[">"])* "?>">
+|	<XML_DOCTYPE	: "<!" (~[">"])* ">">
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Anchor %Children; >
+// <!ATTLIST Anchor 
+//  description CDATA #IMPLIED
+//  url         CDATA #IMPLIED
+//  parameter   CDATA #IMPLIED
+//  bboxCenter  CDATA "(0 0 0)"
+//  bboxSize    CDATA "(-1 -1 -1)"
+//  DEF ID      #IMPLIED 
+//  USE IDREF   #IMPLIED >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void AnchorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()	
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"url" "=" value=FieldString()	
+		{
+			((AnchorNode)getCurrentNode()).setURLs(value);
+		}
+|	"parameter" "=" value=FieldString()	
+		{
+			((AnchorNode)getCurrentNode()).setParameters(value);
+		}
+|	"description" "=" value=FieldString()
+		{
+			((AnchorNode)getCurrentNode()).setDescription(value);
+		}
+|	"bboxCenter" "=" value=FieldString()
+		{
+			((AnchorNode)getCurrentNode()).setBoundingBoxCenter(value);
+		}
+|	"bboxSize" "=" value=FieldString()
+		{
+			((AnchorNode)getCurrentNode()).setBoundingBoxSize(value);
+		}
+}
+
+void AnchorTag() :
+{}
+{
+	"<Anchor"
+		{
+			AnchorNode anchor = new AnchorNode();
+			addNode(anchor);
+			PushNode(anchor);
+		}
+}
+
+void Anchor() :
+{}
+{
+	AnchorTag() (AnchorElement())* ( ("/>") | (">" Children() "</Anchor>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Appearance ( %Appearances; ) >
+// <!ATTLIST Appearance
+//    DEF ID      #IMPLIED
+//    USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void AppearanceElement() :
+{
+	String	name;
+}
+{
+	"DEF" "=" name=NodeName()	
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+}
+
+void AppearanceTag() :
+{}
+{
+	"<Appearance"
+		{
+			AppearanceNode app = new AppearanceNode();
+			addNode(app);
+			PushNode(app);
+		}
+}
+
+void Appearance() :
+{}
+{
+	AppearanceTag() (AppearanceElement())* ( ("/>") | (">" Appearances() "</Appearance>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT AudioClip EMPTY >
+// <!ATTLIST AudioClip
+//    description CDATA #IMPLIED
+//    loop      (true|false) "false"
+//    pitch       CDATA "1.0"
+//    startTime   CDATA "0"
+//    stopTime    CDATA "0"
+//    url         CDATA #IMPLIED
+//    duration    CDATA "0.0"
+//    isActive  (true|false) "false"
+//    DEF ID      #IMPLIED
+//    USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void AudioClipElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()	
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"url" "=" value=FieldString()
+		{
+			((AudioClipNode)getCurrentNode()).setURLs(value);
+		}
+|	"description" "=" value=FieldString()
+		{
+			((AudioClipNode)getCurrentNode()).setDescription(value);
+		}
+|	"loop" "=" value=FieldString()
+		{
+			((AudioClipNode)getCurrentNode()).setLoop(value);
+		}
+|	"pitch" "=" value=FieldString()
+		{
+			((AudioClipNode)getCurrentNode()).setPitch(value);
+		}
+|	"startTime" "=" value=FieldString()
+		{
+			((AudioClipNode)getCurrentNode()).setStartTime(value);
+		}
+|	"stopTime" "=" value=FieldString()
+		{
+			((AudioClipNode)getCurrentNode()).setStopTime(value);
+		}
+|	"duration" "=" value=FieldString()
+		{
+			((AudioClipNode)getCurrentNode()).setDuration(value);
+		}
+|	"isActive" "=" value=FieldString()
+		{
+			((AudioClipNode)getCurrentNode()).setIsActive(value);
+		}
+}
+
+void AudioClipTag() :
+{}
+{
+	"<AudioClip"
+		{
+			AudioClipNode aclip = new AudioClipNode();
+			addNode(aclip);
+			PushNode(aclip);
+		}
+}
+
+void AudioClip() :
+{}
+{
+	AudioClipTag() (AudioClipElement())* ( ("/>") | (">" "</AudioClip>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Background EMPTY>
+// <!ATTLIST Background
+//     groundAngle CDATA #IMPLIED
+//     groundColor CDATA "(0 0 0)"
+//     backUrl     CDATA #IMPLIED
+//     bottomUrl   CDATA #IMPLIED
+//     frontUrl    CDATA #IMPLIED
+//     leftUrl     CDATA #IMPLIED
+//     rightUrl    CDATA #IMPLIED
+//     topUrl      CDATA #IMPLIED
+//     skyAngle    CDATA #IMPLIED
+//     skyColor    CDATA "(0 0 0)"
+//     bind        (true|false) "false"
+//     bindTime    CDATA "-1"
+//     isBound     (true|false) "false"
+//     DEF ID      #IMPLIED 
+//     USE IDREF   #IMPLIED >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void BackgroundElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"backUrl" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setBackURLs(value);
+		}
+|	"bottomUrl" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setBottomURLs(value);
+		}
+|	"frontUrl" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setFrontURLs(value);
+		}
+|	"leftUrl" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setLeftURLs(value);
+		}
+|	"rightUrl" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setRightURLs(value);
+		}
+|	"topUrl" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setTopURLs(value);
+		}
+|	"groundAngle" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setGroundAngles(value);
+		}
+|	"skyAngle" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setSkyAngles(value);
+		}
+|	"groundColor" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setGroundColors(value);
+		}
+|	"skyColor" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setSkyColors(value);
+		}
+|	"bind" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setBind(value);
+		}
+|	"bindTime" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setBindTime(value);
+		}
+|	"isBound" "=" value=FieldString()	
+		{
+			((BackgroundNode)getCurrentNode()).setIsBound(value);
+		}
+}
+
+void BackgroundTag() :
+{}
+{
+	"<Background"
+		{
+			BackgroundNode bg = new BackgroundNode();
+			addNode(bg);
+			PushNode(bg);
+		}
+}
+
+void Background() :
+{}
+{
+	BackgroundTag() (BackgroundElement())* ( ("/>") | (">" "</Background>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Billboard %Children; >
+// <!ATTLIST Billboard
+//     axisOfRotation CDATA "(0 1 0)"
+//     bboxCenter     CDATA "(0 0 0)"
+//     bboxSize       CDATA "(-1 -1 -1)"
+//     DEF ID      #IMPLIED 
+//     USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void BillboardElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()	
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"axisOfRotation" "=" value=FieldString()
+		{
+			((BillboardNode)getCurrentNode()).setAxisOfRotation(value);
+		}
+|	"bboxCenter" "=" value=FieldString()
+		{
+			((BillboardNode)getCurrentNode()).setBoundingBoxCenter(value);
+		}
+|	"bboxSize" "=" value=FieldString()
+		{
+			((BillboardNode)getCurrentNode()).setBoundingBoxSize(value);
+		}
+}
+
+void BillboardTag() :
+{}
+{
+	"<Billboard"
+		{
+			BillboardNode billboard = new BillboardNode();
+			addNode(billboard);
+			PushNode(billboard);
+		}
+}
+
+void Billboard() :
+{}
+{
+	BillboardTag() (BillboardElement())* ( ("/>") | (">" Children() "</Billboard>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Box EMPTY>
+// <!ATTLIST Box
+//     size CDATA "(2 2 2)"
+//     DEF ID      #IMPLIED 
+//     USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void BoxElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()	
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"size" "=" value=FieldString()
+		{
+			((BoxNode)getCurrentNode()).setSize(value);
+		}
+}
+
+void BoxTag() :
+{}
+{
+	"<Box"
+		{
+			BoxNode box = new BoxNode();
+			addNode(box);
+			PushNode(box);
+		}
+}
+
+void Box() :
+{}
+{
+	BoxTag() (BoxElement())* ( ("/>") | (">" "</Box>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!-- not following the proposal to move Collision to Sensor ... -->
+// <!ELEMENT Collision ( ( %ChildrenNodes; )*, Proxy?, ( %ChildrenNodes; )* )  >
+// <!ATTLIST Collision
+//     collide (true|false) "true"
+//     bboxCenter  CDATA "(0 0 0)"
+//     bboxSize    CDATA "(-1 -1 -1)"
+//     collideTime CDATA "0.0"
+//     DEF ID      #IMPLIED 
+//     USE IDREF   #IMPLIED >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CollisionElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()	
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"collideTime" "=" value=FieldString()
+		{
+			((CollisionNode)getCurrentNode()).setCollideTime(value);
+		}
+|	"collide" "=" value=FieldString()
+		{
+			((CollisionNode)getCurrentNode()).setCollide(value);
+		}
+|	"bboxCenter" "=" value=FieldString()
+		{
+			((CollisionNode)getCurrentNode()).setBoundingBoxCenter(value);
+		}
+|	"bboxSize" "=" value=FieldString()
+		{
+			((CollisionNode)getCurrentNode()).setBoundingBoxSize(value);
+		}
+}
+
+void CollisionTag() :
+{}
+{
+	"<Collision"
+		{
+			CollisionNode collision = new CollisionNode();
+			addNode(collision);
+			PushNode(collision);
+		}
+}
+
+void CollisionChildren() :
+{}
+{
+//	(ChildrenNodes())* (Proxy())? (ChildrenNodes())*
+	(ChildrenNodes() | Proxy())*
+}
+
+void Collision() :
+{}
+{
+	CollisionTag() (CollisionElement())* ( ("/>") | (">" CollisionChildren() "</Collision>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Color EMPTY >
+// <!ATTLIST Color
+//     color CDATA #REQUIRED
+//     DEF ID      #IMPLIED
+//     USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ColorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"color" "=" value=FieldString()
+		{
+			((ColorNode)getCurrentNode()).setColors(value);
+		}
+}
+
+void ColorTag() :
+{}
+{
+	"<Color"
+		{
+			ColorNode color = new ColorNode();
+			addNode(color);
+			PushNode(color);
+		}
+}
+
+void Color() :
+{}
+{
+	ColorTag() (ColorElement())* ( ("/>") | (">" "</Color>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT ColorInterpolator EMPTY>
+// <!ATTLIST ColorInterpolator
+//     key      CDATA #IMPLIED
+//     keyValue CDATA #IMPLIED
+//     fraction CDATA "0"
+//     value    CDATA "(0 0 0)" 
+//     DEF ID      #IMPLIED
+//     USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ColorInterpolatorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"key" "=" value=FieldString()
+		{
+			((ColorInterpolatorNode)getCurrentNode()).setKeys(value);
+		}
+|	"keyValue" "=" value=FieldString()
+		{
+			((ColorInterpolatorNode)getCurrentNode()).setKeyValues(value);
+		}
+|	"fraction" "=" value=FieldString()
+		{
+			((ColorInterpolatorNode)getCurrentNode()).setFraction(value);
+		}
+|	"value" "=" value=FieldString()
+		{
+			((ColorInterpolatorNode)getCurrentNode()).setValue(value);
+		}
+}
+
+void ColorInterpolatorTag() :
+{}
+{
+	"<ColorInterpolator"
+		{
+			ColorInterpolatorNode colorInterp = new ColorInterpolatorNode();
+			addNode(colorInterp);
+			PushNode(colorInterp);
+		}
+}
+
+void ColorInterpolator() :
+{}
+{
+	ColorInterpolatorTag() (ColorInterpolatorElement())* ( ("/>") | (">" "</ColorInterpolator>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Cone EMPTY>
+// <!ATTLIST Cone
+//     bottomRadius CDATA "1"
+//     height       CDATA "2"
+//     side   (true|false) "true"
+//     bottom (true|false) "true"
+//     DEF ID      #IMPLIED
+//     USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ConeElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"side" "=" value=FieldString()
+		{
+			((ConeNode)getCurrentNode()).setSide(value);
+		}
+|	"bottom" "=" value=FieldString()
+		{
+			((ConeNode)getCurrentNode()).setBottom(value);
+		}
+|	"height" "=" value=FieldString()
+		{
+			((ConeNode)getCurrentNode()).setHeight(value);
+		}
+|	"bottomRadius" "=" value=FieldString()
+		{
+			((ConeNode)getCurrentNode()).setBottomRadius(value);
+		}
+}
+
+void ConeTag() :
+{}
+{
+	"<Cone"
+		{
+			ConeNode cone = new ConeNode();
+			addNode(cone);
+			PushNode(cone);
+		}
+}
+
+void Cone() :
+{}
+{
+	ConeTag() (ConeElement())* ( ("/>") | (">" "</Cone>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Coordinate EMPTY >
+// <!ATTLIST Coordinate 
+//     point CDATA #REQUIRED
+//     DEF ID      #IMPLIED
+//     USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CoordinateElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"point" "=" value=FieldString()
+		{
+			((CoordinateNode)getCurrentNode()).setPoints(value);
+		}
+}
+
+void CoordinateTag() :
+{}
+{
+	"<Coordinate"
+		{
+			CoordinateNode coord = new CoordinateNode();
+			addNode(coord);
+			PushNode(coord);
+		}
+}
+
+void Coordinate() :
+{}
+{
+	CoordinateTag() (CoordinateElement())* ( ("/>") | (">" "</Coordinate>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT CoordinateInterpolator EMPTY>
+// <!ATTLIST CoordinateInterpolator
+//     key      CDATA #IMPLIED
+//     keyValue CDATA #IMPLIED
+//     fraction CDATA "0"
+//     value    CDATA "(0 0 0)"
+//     DEF ID      #IMPLIED
+//     USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CoordinateInterpolatorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"key" "=" value=FieldString()
+		{
+			((CoordinateInterpolatorNode)getCurrentNode()).setKeys(value);
+		}
+|	"keyValue" "=" value=FieldString()
+		{
+			((CoordinateInterpolatorNode)getCurrentNode()).setKeyValues(value);
+		}
+|	"fraction" "=" value=FieldString()
+		{
+			((CoordinateInterpolatorNode)getCurrentNode()).setFraction(value);
+		}
+|	"value" "=" value=FieldString()
+		{
+			((CoordinateInterpolatorNode)getCurrentNode()).setValue(value);
+		}
+}
+
+void CoordinateInterpolatorTag() :
+{}
+{
+	"<CoordinateInterpolator"
+		{
+			CoordinateInterpolatorNode coordInterp = new CoordinateInterpolatorNode();
+			addNode(coordInterp);
+			PushNode(coordInterp);
+		}
+}
+
+void CoordinateInterpolator() :
+{}
+{
+	CoordinateInterpolatorTag() (CoordinateInterpolatorElement())* ( ("/>") | (">" "</CoordinateInterpolator>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Cylinder EMPTY>
+// <!ATTLIST Cylinder 
+//     bottom (true|false) "true"
+//     height CDATA "2"
+//     radius CDATA "1"
+//     side   (true|false) "true"
+//     top    (true|false) "true"
+//     DEF ID      #IMPLIED
+//     USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CylinderElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"side" "=" value=FieldString()
+		{
+			((CylinderNode)getCurrentNode()).setSide(value);
+		}
+|	"bottom" "=" value=FieldString()
+		{
+			((CylinderNode)getCurrentNode()).setBottom(value);
+		}
+|	"top" "=" value=FieldString()
+		{
+			((CylinderNode)getCurrentNode()).setTop(value);
+		}
+|	"height" "=" value=FieldString()
+		{
+			((CylinderNode)getCurrentNode()).setHeight(value);
+		}
+|	"radius" "=" value=FieldString()
+		{
+			((CylinderNode)getCurrentNode()).setRadius(value);
+		}
+}
+
+void CylinderTag() :
+{}
+{
+	"<Cylinder"
+		{
+			CylinderNode cylinder = new CylinderNode();
+			addNode(cylinder);
+			PushNode(cylinder);
+		}
+}
+
+void Cylinder() :
+{}
+{
+	CylinderTag() (CylinderElement())* ( ("/>") | (">" "</Cylinder>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT CylinderSensor EMPTY>
+// <!ATTLIST CylinderSensor
+//     autoOffset (true|false) "true"
+//     diskAngle  CDATA "0.262"
+//     enabled    (true|false) "true"
+//     maxAngle   CDATA "-1"
+//     minAngle   CDATA "0"
+//     offset     CDATA "0"
+//     isActive   (true|false) "false"    
+//     rotation   CDATA "(0 0 1 0)"
+//     trackPoint CDATA "(0 0 0)"
+//     DEF ID      #IMPLIED
+//     USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CylinderSensorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"minAngle" "=" value=FieldString()
+		{
+			((CylinderSensorNode)getCurrentNode()).setMinAngle(value);
+		}
+|	"maxAngle" "=" value=FieldString()
+		{
+			((CylinderSensorNode)getCurrentNode()).setMaxAngle(value);
+		}
+|	"diskAngle" "=" value=FieldString()
+		{
+			((CylinderSensorNode)getCurrentNode()).setDiskAngle(value);
+		}
+|	"offset" "=" value=FieldString()
+		{
+			((CylinderSensorNode)getCurrentNode()).setOffset(value);
+		}
+|	"enabled" "=" value=FieldString()
+		{
+			((CylinderSensorNode)getCurrentNode()).setEnabled(value);
+		}
+|	"autoOffset" "=" value=FieldString()
+		{
+			((CylinderSensorNode)getCurrentNode()).setAutoOffset(value);
+		}
+|	"isActive" "=" value=FieldString()
+		{
+			((CylinderSensorNode)getCurrentNode()).setIsActive(value);
+		}
+}
+
+void CylinderSensorTag() :
+{}
+{
+	"<CylinderSensor"
+		{
+			CylinderSensorNode sensor = new CylinderSensorNode();
+			addNode(sensor);
+			PushNode(sensor);
+		}
+}
+
+void CylinderSensor() :
+{}
+{
+	CylinderSensorTag() (CylinderSensorElement())* ( ("/>") | (">" "</CylinderSensor>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT DirectionalLight EMPTY>
+// <!ATTLIST DirectionalLight
+//     ambientIntensity CDATA "0"
+//     color            CDATA "(1 1 1)"
+//     direction        CDATA "(0 0 -1)"
+//     intensity        CDATA "1"
+//     on               (true|false) "true"
+//     DEF ID      #IMPLIED
+//     USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void DirectionalLightElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"on" "=" value=FieldString()
+		{
+			((DirectionalLightNode)getCurrentNode()).setOn(value);
+		}
+|	"intensity" "=" value=FieldString()
+		{
+			((DirectionalLightNode)getCurrentNode()).setIntensity(value);
+		}
+|	"ambientIntensity" "=" value=FieldString()
+		{
+			((DirectionalLightNode)getCurrentNode()).setAmbientIntensity(value);
+		}
+|	"color" "=" value=FieldString()
+		{
+			((DirectionalLightNode)getCurrentNode()).setColor(value);
+		}
+|	"direction" "=" value=FieldString()
+		{
+			((DirectionalLightNode)getCurrentNode()).setDirection(value);
+		}
+}
+
+void DirectionalLightTag() :
+{}
+{
+	"<DirectionalLight"
+		{
+			DirectionalLightNode light = new DirectionalLightNode();
+			addNode(light);
+			PushNode(light);
+		}
+}
+
+void DirectionalLight() :
+{}
+{
+	DirectionalLightTag() (DirectionalLightElement())* ( ("/>") | (">" "</DirectionalLight>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT ElevationGrid ( (Color?), (Normal?), (TextureCoordinate?)) >
+// <!ATTLIST ElevationGrid
+//     height          CDATA #IMPLIED
+//     ccw             (true|false) "true"
+//     colorPerVertex  (true|false) "true"
+//     creaseAngle     CDATA "0"
+//     normalPerVertex (true|false) "true"
+//     solid           (true|false) "true"
+//     xDimension      CDATA "0"
+//     xSpacing        CDATA "1.0"
+//     zDimension      CDATA "0"
+//     zSpacing        CDATA "1.0"
+//     DEF ID      #IMPLIED
+//     USE IDREF   #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ElevationGridElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"height" "=" value=FieldString()
+		{
+			((ElevationGridNode)getCurrentNode()).setHeights(value);
+		}
+|	"ccw" "=" value=FieldString()
+		{
+			((ElevationGridNode)getCurrentNode()).setCCW(value);
+		}
+|	"colorPerVertex" "=" value=FieldString()
+		{
+			((ElevationGridNode)getCurrentNode()).setColorPerVertex(value);
+		}
+|	"creaseAngle" "=" value=FieldString()
+		{
+			((ElevationGridNode)getCurrentNode()).setCreaseAngle(value);
+		}
+|	"solid" "=" value=FieldString()
+		{
+			((ElevationGridNode)getCurrentNode()).setSolid(value);
+		}
+|	"normalPerVertex" "=" value=FieldString()
+		{
+			((ElevationGridNode)getCurrentNode()).setNormalPerVertex(value);
+		}
+|	"xDimension" "=" value=FieldString()
+		{
+			((ElevationGridNode)getCurrentNode()).setXDimension(value);
+		}
+|	"xSpacing" "=" value=FieldString()
+		{
+			((ElevationGridNode)getCurrentNode()).setXSpacing(value);
+		}
+|	"zDimension" "=" value=FieldString()
+		{
+			((ElevationGridNode)getCurrentNode()).setZDimension(value);
+		}
+|	"zSpacing" "=" value=FieldString()
+		{
+			((ElevationGridNode)getCurrentNode()).setZSpacing(value);
+		}
+}
+
+void ElevationGridTag() :
+{}
+{
+	"<ElevationGrid"
+		{
+			ElevationGridNode egrid = new ElevationGridNode();
+			addNode(egrid);
+			PushNode(egrid);
+		}
+}
+
+void ElevationGrid() :
+{}
+{
+	ElevationGridTag() (ElevationGridElement())* ( ("/>") | (Color())? (Normal())? (TextureCoordinate())? (">" "</ElevationGrid>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Extrusion EMPTY >
+// <!ATTLIST Extrusion
+//     beginCap     (true|false) "true"
+//     ccw          (true|false) "true"
+//     convex       (true|false) "true"
+//     creaseAngle  CDATA "0.0"
+//     crossSection CDATA "[ 1 1, 1 -1, -1 -1, -1 1, 1 1 ]"
+//     endCap       (true|false) "true"
+//     orientation  CDATA "[0 0 1 0]"
+//     scale        CDATA "[1 1]"
+//     solid        (true|false) "true"
+//     spine        CDATA "[ 0 0 0, 0 1 0 ]"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ExtrusionElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"crossSection" "=" value=FieldString()
+		{
+			((ExtrusionNode)getCurrentNode()).setCrossSections(value);
+		}
+|	"orientation" "=" value=FieldString()	
+		{
+			((ExtrusionNode)getCurrentNode()).setOrientations(value);
+		}
+|	"scale" "=" value=FieldString()	
+		{
+			((ExtrusionNode)getCurrentNode()).setScales(value);
+		}
+|	"spine" "=" value=FieldString()	
+		{
+			((ExtrusionNode)getCurrentNode()).setSpines(value);
+		}
+|	"ccw" "=" value=FieldString()
+		{
+			((ExtrusionNode)getCurrentNode()).setCCW(value);
+		}
+|	"convex" "=" value=FieldString()
+		{
+			((ExtrusionNode)getCurrentNode()).setConvex(value);
+		}
+|	"beginCap" "=" value=FieldString()
+		{
+			((ExtrusionNode)getCurrentNode()).setBeginCap(value);
+		}
+|	"endCap" "=" value=FieldString()
+		{
+			((ExtrusionNode)getCurrentNode()).setEndCap(value);
+		}
+|	"creaseAngle" "=" value=FieldString()
+		{
+			((ExtrusionNode)getCurrentNode()).setCreaseAngle(value);
+		}
+|	"solid" "=" value=FieldString()
+		{
+			((ExtrusionNode)getCurrentNode()).setSolid(value);
+		}
+}
+
+void ExtrusionTag() :
+{}
+{
+	"<Extrusion"
+		{
+			ExtrusionNode extrusion = new ExtrusionNode();
+			addNode(extrusion);
+			PushNode(extrusion);
+		}
+}
+
+void Extrusion() :
+{}
+{
+	ExtrusionTag() (ExtrusionElement())* ( ("/>") | (">" "</Extrusion>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Fog EMPTY >
+// <!ATTLIST Fog
+//     color           CDATA "(1 1 1)"
+//     fogType         (LINEAR|EXPONENTIAL) "LINEAR"
+//     visibilityRange CDATA "0"
+//     bind            (true|false) "false"
+//     bindTime        CDATA "-1"
+//     isBound         (true|false) "false"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void FogElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"color" "=" value=FieldString()
+		{
+			((FogNode)getCurrentNode()).setColor(value);
+		}
+|	"fogType" "=" value=FieldString()
+		{
+			((FogNode)getCurrentNode()).setFogType(value);
+		}
+|	"visibilityRange" "=" value=FieldString()
+		{
+			((FogNode)getCurrentNode()).setVisibilityRange(value);
+		}
+|	"bind" "=" value=FieldString()	
+		{
+			((FogNode)getCurrentNode()).setBind(value);
+		}
+|	"bindTime" "=" value=FieldString()	
+		{
+			((FogNode)getCurrentNode()).setBindTime(value);
+		}
+|	"isBound" "=" value=FieldString()	
+		{
+			((FogNode)getCurrentNode()).setIsBound(value);
+		}
+}
+
+void FogTag() :
+{}
+{
+	"<Fog"
+		{
+			FogNode fog = new FogNode();
+			addNode(fog);
+			PushNode(fog);
+		}
+}
+
+void Fog() :
+{}
+{
+	FogTag() (FogElement())* ( ("/>") | (">" "</Fog>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT FontStyle EMPTY >
+// <!ATTLIST FontStyle
+//     family      CDATA "[SERIF]"
+//     horizontal  (true|false) "true"
+//     justify     CDATA "[BEGIN]"
+//     language    CDATA #IMPLIED
+//     leftToRight (true|false) "true"
+//     size CDATA  "1.0"
+//     spacing     CDATA "1.0"
+//     style       (PLAIN|BOLD|ITALIC) "BOLD"
+//     topToBottom (true|false) "true"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void FontStyleElement() : 
+{
+	String	name;
+	String	value;
+}
+{
+
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"family" "=" value=FieldString()
+		{
+			((FontStyleNode)getCurrentNode()).setFamilies(value);
+		}
+|	"justify" "=" value=FieldString()	
+		{
+			((FontStyleNode)getCurrentNode()).setJustifies(value);
+		}
+|	"language" "=" value=FieldString()
+		{
+			((FontStyleNode)getCurrentNode()).setLanguage(value);
+		}
+|	"style" "=" value=FieldString()
+		{
+			((FontStyleNode)getCurrentNode()).setStyle(value);
+		}
+|	"horizontal" "=" value=FieldString()
+		{
+			((FontStyleNode)getCurrentNode()).setHorizontal(value);
+		}
+|	"leftToRight" "=" value=FieldString()
+		{
+			((FontStyleNode)getCurrentNode()).setLeftToRight(value);
+		}
+|	"topToBottom" "=" value=FieldString()
+		{
+			((FontStyleNode)getCurrentNode()).setTopToBottom(value);
+		}
+|	"size" "=" value=FieldString()
+		{
+			((FontStyleNode)getCurrentNode()).setSize(value);
+		}
+|	"spacing" "=" value=FieldString()
+		{
+			((FontStyleNode)getCurrentNode()).setSpacing(value);
+		}
+}
+
+void FontStyleTag() :
+{}
+{
+	"<FontStyle"
+		{
+			FontStyleNode fontStyle = new FontStyleNode();
+			addNode(fontStyle);
+			PushNode(fontStyle);
+		}
+}
+
+void FontStyle() :
+{}
+{
+	FontStyleTag() (FontStyleElement())* ( ("/>") | (">" "</FontStyle>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Group %Children; >
+// <!ATTLIST Group
+//     bboxCenter CDATA "(0 0 0)"
+//     bboxSize   CDATA "(-1 -1 -1)"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void GroupElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"bboxCenter" "=" value=FieldString()	
+		{
+			((GroupNode)getCurrentNode()).setBoundingBoxCenter(value);
+		}
+|	"bboxSize" "=" value=FieldString()
+		{
+			((GroupNode)getCurrentNode()).setBoundingBoxSize(value);
+		}
+}
+
+void GroupTag() :
+{}
+{
+	"<Group"
+		{
+			GroupNode group = new GroupNode();
+			addNode(group);
+			PushNode(group);
+		}
+}
+
+void Group() :
+{}
+{
+	GroupTag() (GroupElement())* ( ("/>") | (">" Children() "</Group>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT ImageTexture EMPTY >
+// <!ATTLIST ImageTexture 
+//     url     CDATA #IMPLIED
+//     repeatS (true|false) "true"
+//     repeatT (true|false) "true"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ImageTextureElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"url" "=" value=FieldString()	
+		{
+			((ImageTextureNode)getCurrentNode()).setURLs(value);
+		}
+|	"repeatS" "=" value=FieldString()
+		{
+			((ImageTextureNode)getCurrentNode()).setRepeatS(value);
+		}
+|	"repeatT" "=" value=FieldString()
+		{
+			((ImageTextureNode)getCurrentNode()).setRepeatT(value);
+		}
+}
+
+void ImageTextureTag() :
+{}
+{
+	"<ImageTexture"
+		{
+			ImageTextureNode texture = new ImageTextureNode();
+			addNode(texture);
+			PushNode(texture);
+		}
+}
+
+void ImageTexture() :
+{}
+{
+	ImageTextureTag() (ImageTextureElement())* ( ("/>") | (">" "</ImageTexture>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT IndexedFaceSet ( ( Color?, Coordinate?, Normal?, TextureCoordinate? ) |
+//                            ( Coordinate?, Color?, Normal?, TextureCoordinate? ) ) >
+// <!ATTLIST IndexedFaceSet
+//     ccw             (true|false) "true"
+//     colorIndex      CDATA #IMPLIED
+//     colorPerVertex  (true|false) "true"
+//     convex          (true|false) "true" 
+//     coordIndex      CDATA #IMPLIED
+//     creaseAngle     CDATA "0"
+//     normalIndex     CDATA #IMPLIED
+//     normalPerVertex (true|false) "true"
+//     solid           (true|false) "true"
+//     texCoordIndex   CDATA #IMPLIED
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void IdxFaceSetElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"coordIndex" "=" value=FieldString()	
+	{
+		((IndexedFaceSetNode)getCurrentNode()).setCoordIndices(value);
+	}
+|	"colorIndex" "=" value=FieldString()	
+	{
+		((IndexedFaceSetNode)getCurrentNode()).setColorIndices(value);
+	}
+|	"normalIndex" "=" value=FieldString()	
+	{
+		((IndexedFaceSetNode)getCurrentNode()).setNormalIndices(value);
+	}
+|	"texCoordIndex" "=" value=FieldString()	
+	{
+		((IndexedFaceSetNode)getCurrentNode()).setTexCoordIndices(value);
+	}
+|	"creaseAngle" "=" value=FieldString()
+	{
+		((IndexedFaceSetNode)getCurrentNode()).setCreaseAngle(value);
+	}
+|	"ccw" "=" value=FieldString()
+	{
+		((IndexedFaceSetNode)getCurrentNode()).setCCW(value);
+	}
+|	"solid" "=" value=FieldString()
+	{
+		((IndexedFaceSetNode)getCurrentNode()).setSolid(value);
+	}
+|	"convex" "=" value=FieldString()
+	{
+		((IndexedFaceSetNode)getCurrentNode()).setConvex(value);
+	}
+|	"colorPerVertex" "=" value=FieldString()
+	{
+		((IndexedFaceSetNode)getCurrentNode()).setColorPerVertex(value);
+	}
+|	"normalPerVertex" "=" value=FieldString()
+	{
+		((IndexedFaceSetNode)getCurrentNode()).setNormalPerVertex(value);
+	}
+}
+
+void IdxFaceSetTag() :
+{}
+{
+	"<IndexedFaceSet"
+		{
+			IndexedFaceSetNode idxFaceset = new IndexedFaceSetNode();
+			addNode(idxFaceset);
+			PushNode(idxFaceset);
+		}
+}
+
+void IndexedFaceSetChildren() :
+{}
+{
+/*
+	LOOKAHEAD(3) (Color())? (Coordinate())? (Normal())? (TextureCoordinate())?
+|	LOOKAHEAD(3) (Coordinate())? (Color())? (Normal())? (TextureCoordinate())? 
+*/
+	(Color() | Coordinate() | Normal() | TextureCoordinate())*
+}
+
+void IndexedFaceSet() :
+{}
+{
+	IdxFaceSetTag() (IdxFaceSetElement())* ( ("/>") | (">" IndexedFaceSetChildren() "</IndexedFaceSet>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT IndexedLineSet ( ( Color?, Coordinate? ) |
+//                            ( Coordinate?, Color? ) ) >
+// <!ATTLIST IndexedLineSet
+//     colorIndex      CDATA #IMPLIED
+//     colorPerVertex  (true|false) "true"
+//     coordIndex      CDATA #IMPLIED
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void IdxLineSetElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"coordIndex" "=" value=FieldString()	
+	{
+		((IndexedLineSetNode)getCurrentNode()).setCoordIndices(value);
+	}
+|	"colorIndex" "=" value=FieldString()	
+	{
+		((IndexedLineSetNode)getCurrentNode()).setColorIndices(value);
+	}
+|	"colorPerVertex" "=" value=FieldString()
+	{
+		((IndexedLineSetNode)getCurrentNode()).setColorPerVertex(value);
+	}
+}
+
+void IdxLineSetTag() :
+{}
+{
+	"<IndexedLineSet"
+		{
+			IndexedLineSetNode idxLineSet = new IndexedLineSetNode();
+			addNode(idxLineSet);
+			PushNode(idxLineSet);
+		}
+}
+
+void IndexedLineSetChildren() :
+{}
+{
+/*
+	LOOKAHEAD(3) (Color())? (Coordinate())? 
+|	LOOKAHEAD(3) (Coordinate())? (Color())?
+*/
+	(Coordinate() | Color())*
+}
+
+void IndexedLineSet() :
+{}
+{
+	IdxLineSetTag() (IdxLineSetElement())* ( ("/>") | (">" IndexedLineSetChildren() "</IndexedLineSet>") )
+		{
+			PopNode();
+		}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Inline ( %SceneNodes; ) >
+// <!ATTLIST Inline 
+//     url         CDATA #REQUIRED
+//     bboxCenter  CDATA "(0 0 0)"
+//     bboxSize    CDATA "(-1 -1 -1)"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void InlineElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"url" "=" value=FieldString()	
+		{
+			((InlineNode)getCurrentNode()).setURLs(value);
+		}
+|	"bboxCenter" "=" value=FieldString()
+		{
+			((InlineNode)getCurrentNode()).setBoundingBoxCenter(value);
+		}
+|	"bboxSize" "=" value=FieldString()
+		{
+			((InlineNode)getCurrentNode()).setBoundingBoxSize(value);
+		}
+}
+
+void InlineTag() :
+{}
+{
+	"<Inline"
+		{
+			InlineNode inline = new InlineNode();
+			addNode(inline);
+			PushNode(inline);
+		}
+}
+
+void Inline() :
+{}
+{
+	InlineTag() (InlineElement())* ( ("/>") | (">" SceneNodes() "</Inline>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT LOD %Children; >
+// <!ATTLIST LOD
+//     center CDATA "(0 0 0)"
+//     range  CDATA #IMPLIED
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void LODElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"range" "=" value=FieldString()	
+		{
+			((LODNode)getCurrentNode()).setRanges(value);
+		}
+|	"center" "=" value=FieldString()
+		{
+			((LODNode)getCurrentNode()).setCenter(value);
+		}
+}
+
+void LODTag() :
+{}
+{
+	"<LOD"
+		{
+			LODNode lod = new LODNode();
+			addNode(lod);
+			PushNode(lod);
+		}
+}
+
+void LOD() :
+{}
+{
+	LODTag() (LODElement())* ( ("/>") | (">" Children() "</LOD>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Material EMPTY >
+// <!ATTLIST Material
+//     ambientIntensity CDATA "0.2"
+//     diffuseColor     CDATA "(0.8 0.8 0.8)"
+//     emissiveColor    CDATA "(0 0 0)"
+//     shininess        CDATA "0.2"
+//     specularColor    CDATA "(0 0 0)"
+//     transparency     CDATA "0"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void MaterialElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"ambientIntensity" "=" value=FieldString()	
+		{
+			((MaterialNode)getCurrentNode()).setAmbientIntensity(value);
+		}
+|	"shininess" "=" value=FieldString()	
+		{
+			((MaterialNode)getCurrentNode()).setShininess(value);
+		}
+|	"transparency" "=" value=FieldString()	
+		{
+			((MaterialNode)getCurrentNode()).setTransparency(value);
+		}
+|	"diffuseColor" "=" value=FieldString()	
+		{
+			((MaterialNode)getCurrentNode()).setDiffuseColor(value);
+		}
+|	"specularColor" "=" value=FieldString()
+		{
+			((MaterialNode)getCurrentNode()).setSpecularColor(value);
+		}
+|	"emissiveColor" "=" value=FieldString()
+		{
+			((MaterialNode)getCurrentNode()).setEmissiveColor(value);
+		}
+}
+
+void MaterialTag() :
+{}
+{
+	"<Material"
+		{
+			MaterialNode mat = new MaterialNode();
+			addNode(mat);
+			PushNode(mat);
+		}
+}
+
+void Material() :
+{}
+{
+	MaterialTag() (MaterialElement())* ( ("/>") | (">" "</Material>") )
+		{
+			PopNode();
+		}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT MovieTexture EMPTY >
+// <!ATTLIST MovieTexture
+//     loop      (true|false) "true"
+//     speed     CDATA "1.0"
+//     startTime CDATA "0"
+//     stopTime  CDATA "0"
+//     url       CDATA #IMPLIED
+//     repeatS   (true|false) "true"
+//     repeatT   (true|false) "true"
+//     duration  CDATA "0.0" 
+//     isActive  (true|false) "false"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void MovieTextureElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"url" "=" value=FieldString()	
+		{
+			((MovieTextureNode)getCurrentNode()).setURLs(value);
+		}
+|	"repeatS" "=" value=FieldString()
+		{
+			((MovieTextureNode)getCurrentNode()).setRepeatS(value);
+		}
+|	"repeatT" "=" value=FieldString()
+		{
+			((MovieTextureNode)getCurrentNode()).setRepeatT(value);
+		}
+|	"loop" "=" value=FieldString()
+		{
+			((MovieTextureNode)getCurrentNode()).setLoop(value);
+		}
+|	"startTime" "=" value=FieldString()
+		{
+			((MovieTextureNode)getCurrentNode()).setStartTime(value);
+		}
+|	"stopTime" "=" value=FieldString()
+		{
+			((MovieTextureNode)getCurrentNode()).setStopTime(value);
+		}
+|	"speed" "=" value=FieldString()
+		{
+			((MovieTextureNode)getCurrentNode()).setSpeed(value);
+		}
+|	"isActive" "=" value=FieldString()
+		{
+			((MovieTextureNode)getCurrentNode()).setIsActive(value);
+		}
+}
+
+void MovieTextureTag() :
+{}
+{
+	"<MovierTexture"
+		{
+			MovieTextureNode texture = new MovieTextureNode();
+			addNode(texture);
+			PushNode(texture);
+		}
+}
+
+void MovieTexture() :
+{}
+{
+	MovieTextureTag() (MovieTextureElement())* ( ("/>") | (">" "</MovieTexture>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT NavigationInfo EMPTY >
+// <!ATTLIST NavigationInfo
+//     avatarSize      CDATA "[0.25 1.6 0.75]"
+//     headlight       (true|false) "true"
+//     speed           CDATA "1"
+//     type            NMTOKENS #IMPLIED
+//     visibilityLimit CDATA "0"
+//     bind            (true|false) "false"
+//     bindTime        CDATA "-1"
+//     isBound         (true|false) "false"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void NavigationInfoElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"avatarSize" "=" value=FieldString()	
+		{
+			((NavigationInfoNode)getCurrentNode()).setAvatarSizes(value);
+		}
+|	"type" "=" value=FieldString()	
+		{
+			((NavigationInfoNode)getCurrentNode()).setTypes(value);
+		}
+|	"headlight" "=" value=FieldString()	
+		{
+			((NavigationInfoNode)getCurrentNode()).setHeadlight(value);
+		}
+|	"speed" "=" value=FieldString()	
+		{
+			((NavigationInfoNode)getCurrentNode()).setSpeed(value);
+		}
+|	"visibilityLimit" "=" value=FieldString()	
+		{
+			((NavigationInfoNode)getCurrentNode()).setVisibilityLimit(value);
+		}
+|	"bind" "=" value=FieldString()	
+		{
+			((NavigationInfoNode)getCurrentNode()).setBind(value);
+		}
+|	"bindTime" "=" value=FieldString()	
+		{
+			((NavigationInfoNode)getCurrentNode()).setBindTime(value);
+		}
+|	"isBound" "=" value=FieldString()	
+		{
+			((NavigationInfoNode)getCurrentNode()).setIsBound(value);
+		}
+}
+
+void NavigationInfoTag() :
+{}
+{
+	"<NavigationInfo"
+		{
+			NavigationInfoNode navInfo = new NavigationInfoNode();
+			addNode(navInfo);
+			PushNode(navInfo);
+		}
+}
+
+void NavigationInfo() :
+{}
+{
+	NavigationInfoTag() (NavigationInfoElement())* ( ("/>") | (">" "</NavigationInfo>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Normal EMPTY >
+// <!ATTLIST Normal
+//     vector    CDATA #REQUIRED
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void NormalElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"vector" "=" value=FieldString()	
+		{
+			((NormalNode)getCurrentNode()).setVectors(value);
+		}
+}
+
+void NormalTag() :
+{}
+{
+	"<Normal"
+		{
+			NormalNode normal = new NormalNode();
+			addNode(normal);
+			PushNode(normal);
+		}
+}
+
+void Normal() :
+{}
+{
+	NormalTag() (NormalElement())* ( ("/>") | (">" "</Normal>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT NormalInterpolator EMPTY >
+// <!ATTLIST NormalInterpolator
+//     key      CDATA #IMPLIED
+//     keyValue CDATA #IMPLIED
+//     fraction CDATA "0"
+//     value    CDATA "(0 0 0)"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void NormalInterpolatorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"key" "=" value=FieldString()	
+		{
+			((NormalInterpolatorNode)getCurrentNode()).setKeys(value);
+		}
+|	"keyValue" "=" value=FieldString()	
+		{
+			((NormalInterpolatorNode)getCurrentNode()).setKeyValues(value);
+		}
+|	"fraction" "=" value=FieldString()
+		{
+			((NormalInterpolatorNode)getCurrentNode()).setFraction(value);
+		}
+|	"value" "=" value=FieldString()
+		{
+			((NormalInterpolatorNode)getCurrentNode()).setValue(value);
+		}
+}
+
+void NormalInterpolatorTag() :
+{}
+{
+	"<NormalInterpolator"
+		{
+			NormalInterpolatorNode normalInterp = new NormalInterpolatorNode();
+			addNode(normalInterp);
+			PushNode(normalInterp);
+		}
+}
+
+void NormalInterpolator() :
+{}
+{
+	NormalInterpolatorTag() (NormalInterpolatorElement())* ( ("/>") | (">" "</NormalInterpolator>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT OrientationInterpolator EMPTY >
+// <!ATTLIST OrientationInterpolator
+//     key      CDATA #IMPLIED
+//     keyValue CDATA #IMPLIED
+//     fraction CDATA "0"
+//     value    CDATA "(0 0 1 0)"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void OrientationInterpolatorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"key" "=" value=FieldString()	
+		{
+			((OrientationInterpolatorNode)getCurrentNode()).setKeys(value);
+		}
+|	"keyValue" "=" value=FieldString()	
+		{
+			((OrientationInterpolatorNode)getCurrentNode()).setKeyValues(value);
+		}
+|	"fraction" "=" value=FieldString()
+		{
+			((OrientationInterpolatorNode)getCurrentNode()).setFraction(value);
+		}
+|	"value" "=" value=FieldString()
+		{
+			((OrientationInterpolatorNode)getCurrentNode()).setValue(value);
+		}
+}
+
+void OrientationInterpolatorTag() :
+{}
+{
+	"<OrientationInterpolator"
+		{
+			OrientationInterpolatorNode normalInterp = new OrientationInterpolatorNode();
+			addNode(normalInterp);
+			PushNode(normalInterp);
+		}
+}
+
+void OrientationInterpolator() :
+{}
+{
+	OrientationInterpolatorTag() (OrientationInterpolatorElement())* ( ("/>") | (">" "</OrientationInterpolator>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT PixelTexture EMPTY >
+// <!ATTLIST PixelTexture 
+//     image   CDATA "(0 0 0)"
+//     repeatS (true|false) "true"
+//     repeatT (true|false) "true"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void PixelTextureElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"image" "=" value=FieldString()	
+		{
+			((PixelTextureNode)getCurrentNode()).setImages(value);
+		}
+|	"repeatS" "=" value=FieldString()
+		{
+			((PixelTextureNode)getCurrentNode()).setRepeatS(value);
+		}
+|	"repeatT" "=" value=FieldString()
+		{
+			((PixelTextureNode)getCurrentNode()).setRepeatT(value);
+		}
+}
+
+void PixelTextureTag() :
+{}
+{
+	"<PixelTexture"
+		{
+			PixelTextureNode texture = new PixelTextureNode();
+			addNode(texture);
+			PushNode(texture);
+		}
+}
+
+void PixelTexture() :
+{}
+{
+	PixelTextureTag() (PixelTextureElement())* ( ("/>") | (">" "</PixelTexture>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT PlaneSensor EMPTY >
+// <!ATTLIST PlaneSensor 
+//     autoOffset  (true|false) "true"
+//     enabled     (true|false) "true"
+//     maxPosition CDATA "(-1 -1)"
+//     minPosition CDATA "(0 0)"
+//     offset      CDATA "(0 0 0)"
+//     isActive    (true|false) "false"
+//     trackPoint  CDATA "(0 0 0)"
+//     translation CDATA "(0 0 0)"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void PlaneSensorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"maxPosition" "=" value=FieldString()
+		{
+			((PlaneSensorNode)getCurrentNode()).setMaxPosition(value);
+		}
+|	"offset" "=" value=FieldString()
+		{
+			((PlaneSensorNode)getCurrentNode()).setOffset(value);
+		}
+|	"enabled" "=" value=FieldString()	
+		{
+			((PlaneSensorNode)getCurrentNode()).setEnabled(value);
+		}
+|	"autoOffset" "=" value=FieldString()
+		{
+			((PlaneSensorNode)getCurrentNode()).setAutoOffset(value);
+		}
+|	"isActive" "=" value=FieldString()
+		{
+			((PlaneSensorNode)getCurrentNode()).setIsActive(value);
+		}
+}
+
+void PlaneSensorTag() :
+{}
+{
+	"<PlaneSensor"
+		{
+			PlaneSensorNode sensor = new PlaneSensorNode();
+			addNode(sensor);
+			PushNode(sensor);
+		}
+}
+
+void PlaneSensor() :
+{}
+{
+	PlaneSensorTag() (PlaneSensorElement())* ( ("/>") | (">" "</PlaneSensor>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT PointLight EMPTY >
+// <!ATTLIST PointLight
+//     ambientIntensity CDATA "0"
+//     attenuation      CDATA "(1 0 0)"
+//     color            CDATA "(1 1 1)"
+//     intensity        CDATA "1"
+//     location         CDATA "(0 0 0)"
+//     on               (true|false) "true"
+//     radius           CDATA "100"  
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void PointLightElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"on" "=" value=FieldString()
+		{
+			((PointLightNode)getCurrentNode()).setOn(value);
+		}
+|	"intensity" "=" value=FieldString()
+		{
+			((PointLightNode)getCurrentNode()).setIntensity(value);
+		}
+|	"ambientIntensity" "=" value=FieldString()
+		{
+			((PointLightNode)getCurrentNode()).setAmbientIntensity(value);
+		}
+|	"color" "=" value=FieldString()
+		{
+			((PointLightNode)getCurrentNode()).setColor(value);
+		}
+|	"radius" "=" value=FieldString()
+		{
+			((PointLightNode)getCurrentNode()).setRadius(value);
+		}
+|	"location" "=" value=FieldString()
+		{
+			((PointLightNode)getCurrentNode()).setLocation(value);
+		}
+|	"attenuation" "=" value=FieldString()
+		{
+			((PointLightNode)getCurrentNode()).setAttenuation(value);
+		}
+}
+
+void PointLightTag() :
+{}
+{
+	"<PointLight"
+		{
+			PointLightNode light = new PointLightNode();
+			addNode(light);
+			PushNode(light);
+		}
+}
+
+void PointLight() :
+{}
+{
+	PointLightTag() (PointLightElement())* ( ("/>") | (">" "</PointLight>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT PointSet ( ( (Color?), (Coordinate?) ) |
+//                      ( (Coordinate?), (Color?) ) ) >
+// <!ATTLIST PointSet
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void PointSetElement() :
+{
+	String	name;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+}
+
+void PointSetTag() :
+{}
+{
+	"<PointSet"
+		{
+			PointSetNode point = new PointSetNode();
+			addNode(point);
+			PushNode(point);
+		}
+}
+
+void PointSetChildren() :
+{}
+{
+	LOOKAHEAD(3) (Color())? (Coordinate())? 
+|	LOOKAHEAD(3) (Coordinate())? (Color())?
+}
+
+void PointSet() :
+{}
+{
+	PointSetTag() (PointSetElement())* ( ("/>") | (">" PointSetChildren() "</PointSet>") )
+		{
+			getCurrentNode().initialize();
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT PositionInterpolator EMPTY >
+// <!ATTLIST PositionInterpolator
+//     key      CDATA #IMPLIED
+//     keyValue CDATA #IMPLIED
+//     fraction CDATA "0"
+//     value    CDATA "(0 0 0)"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void PositionInterpolatorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"key" "=" value=FieldString()	
+		{
+			((PositionInterpolatorNode)getCurrentNode()).setKeys(value);
+		}
+|	"keyValue" "=" value=FieldString()	
+		{
+			((PositionInterpolatorNode)getCurrentNode()).setKeyValues(value);
+		}
+|	"fraction" "=" value=FieldString()
+		{
+			((PositionInterpolatorNode)getCurrentNode()).setFraction(value);
+		}
+|	"value" "=" value=FieldString()
+		{
+			((PositionInterpolatorNode)getCurrentNode()).setValue(value);
+		}
+}
+
+void PositionInterpolatorTag() :
+{}
+{
+	"<PositionInterpolator"
+		{
+			PositionInterpolatorNode normalInterp = new PositionInterpolatorNode();
+			addNode(normalInterp);
+			PushNode(normalInterp);
+		}
+}
+
+void PositionInterpolator() :
+{}
+{
+	PositionInterpolatorTag() (PositionInterpolatorElement())* ( ("/>") | (">" "</PositionInterpolator>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT ProximitySensor EMPTY >
+// <!ATTLIST ProximitySensor
+//     center      CDATA "(0 0 0)"
+//     size        CDATA "(0 0 0)"
+//     enabled     (true|false) "true"
+//     isActive    (true|false) "false"
+//     position    CDATA "(0 0 0)"
+//     orientation CDATA "(0 0 1 0)"
+//     enterTime   CDATA "0"
+//     exitTime    CDATA "0"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ProximitySensorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"center" "=" value=FieldString()
+		{
+			((ProximitySensorNode)getCurrentNode()).setCenter(value);
+		}
+|	"size" "=" value=FieldString()
+		{
+			((ProximitySensorNode)getCurrentNode()).setSize(value);
+		}
+|	"position" "=" value=FieldString()
+		{
+			((ProximitySensorNode)getCurrentNode()).setPosition(value);
+		}
+|	"orientation" "=" value=FieldString()
+		{
+			((ProximitySensorNode)getCurrentNode()).setOrientation(value);
+		}
+|	"enterTime" "=" value=FieldString()
+		{
+			((ProximitySensorNode)getCurrentNode()).setEnterTime(value);
+		}
+|	"exitTime" "=" value=FieldString()
+		{
+			((ProximitySensorNode)getCurrentNode()).setExitTime(value);
+		}
+|	"enabled" "=" value=FieldString()
+		{
+			((ProximitySensorNode)getCurrentNode()).setEnabled(value);
+		}
+|	"isActive" "=" value=FieldString()
+		{
+			((ProximitySensorNode)getCurrentNode()).setIsActive(value);
+		}
+}
+
+void ProximitySensorTag() :
+{}
+{
+	"<ProximitySensor"
+		{
+			ProximitySensorNode sensor = new ProximitySensorNode();
+			addNode(sensor);
+			PushNode(sensor);
+		}
+}
+
+void ProximitySensor() :
+{}
+{
+	ProximitySensorTag() (ProximitySensorElement())* ( ("/>") | (">" "</ProximitySensor>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Proxy ( %CollisionProxyNodes; )? >
+// <!ATTLIST Proxy
+//     DEF ID      #IMPLIED 
+//     USE IDREF   #IMPLIED >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ProxyElement() :
+{
+	String	name;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+}
+
+void ProxyTag() :
+{}
+{
+	"<Proxy"
+		{
+			ProxyNode sensor = new ProxyNode();
+			addNode(sensor);
+			PushNode(sensor);
+		}
+}
+
+void Proxy() :
+{}
+{
+	ProxyTag() (ProxyElement())* ( ("/>") | (">" CollisionProxyNodes() "</Proxy>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT ScalarInterpolator EMPTY >
+// <!ATTLIST ScalarInterpolator
+//     key      CDATA #IMPLIED
+//     keyValue CDATA #IMPLIED
+//     fraction CDATA "0"
+//     value    CDATA "0"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ScalarInterpolatorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"key" "=" value=FieldString()	
+		{
+			((ScalarInterpolatorNode)getCurrentNode()).setKeys(value);
+		}
+|	"keyValue" "=" value=FieldString()	
+		{
+			((ScalarInterpolatorNode)getCurrentNode()).setKeyValues(value);
+		}
+|	"fraction" "=" value=FieldString()
+		{
+			((ScalarInterpolatorNode)getCurrentNode()).setFraction(value);
+		}
+|	"value" "=" value=FieldString()
+		{
+			((ScalarInterpolatorNode)getCurrentNode()).setValue(value);
+		}
+}
+
+void ScalarInterpolatorTag() :
+{}
+{
+	"<ScalarInterpolator"
+		{
+			ScalarInterpolatorNode normalInterp = new ScalarInterpolatorNode();
+			addNode(normalInterp);
+			PushNode(normalInterp);
+		}
+}
+
+void ScalarInterpolator() :
+{}
+{
+	ScalarInterpolatorTag() (ScalarInterpolatorElement())* ( ("/>") | (">" "</ScalarInterpolator>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!-- Script is similar to PROTO regarding user definition
+//      of multiple eventIn, field, eventOut -->
+// 
+// <!ELEMENT Script ( eventIn*, field*, eventOut* )+ >
+// <!ATTLIST Script
+//     url          CDATA #IMPLIED
+//     directOutput (true|false) "false"
+//     mustEvaluate (true|false) "false"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ScriptElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"url" "=" value=FieldString()	
+		{
+			((ScriptNode)getCurrentNode()).setURLs(value);
+		}
+|	"directOutput" "=" value=FieldString()
+		{
+			((ScriptNode)getCurrentNode()).setDirectOutput(value);
+		}
+|	"mustEvaluate" "=" value=FieldString()
+		{
+			((ScriptNode)getCurrentNode()).setMustEvaluate(value);
+		}
+}
+
+void ScriptTag() :
+{}
+{
+	"<Script"
+		{
+			ScriptNode script = new ScriptNode();
+			addNode(script);
+			PushNode(script);
+		}
+}
+
+void Script() :
+{}
+{
+//	ScriptTag() (ScriptElement())* ( ("/>") | (">" ( (eventIn())* (field())* (eventOut())* )+ "</Script>") )
+	ScriptTag() (ScriptElement())* ( ("/>") | (">" "</Script>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Shape ( ( Appearance?, (%GeometryNodes;)? ) |
+//                 ( (%GeometryNodes;)?, Appearance? ))   >
+// <!ATTLIST Shape
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ShapeElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+}
+
+void ShapeTag() :
+{}
+{
+	"<Shape"
+		{
+			ShapeNode script = new ShapeNode();
+			addNode(script);
+			PushNode(script);
+		}
+}
+
+void ShapeChildren() :
+{}
+{
+/*
+	LOOKAHEAD(3) (Appearance())? (GeometryNodes())?
+|	LOOKAHEAD(3) (GeometryNodes())? (Appearance())?
+*/
+	(GeometryNodes() | Appearance())*
+}
+
+void Shape() :
+{}
+{
+	ShapeTag() (ShapeElement())* ( ("/>") | (">" ShapeChildren() "</Shape>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Sound ( AudioClip | MovieTexture ) >
+// <!ATTLIST Sound
+//     direction  CDATA "(0 0 1)"
+//     intensity  CDATA "1"
+//     location   CDATA "(0 0 0)"
+//     maxBack    CDATA "10"
+//     maxFront   CDATA "10"
+//     minBack    CDATA "1"
+//     minFront   CDATA "1"
+//     priority   CDATA "0"
+//     spatialize (true|false) "true"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void SoundElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"spatialize" "=" value=FieldString()
+		{
+			((SoundNode)getCurrentNode()).setSpatialize(value);
+		}
+|	"intensity" "=" value=FieldString()
+		{
+			((SoundNode)getCurrentNode()).setIntensity(value);
+		}
+|	"maxBack" "=" value=FieldString()
+		{
+			((SoundNode)getCurrentNode()).setMaxBack(value);
+		}
+|	"minBack" "=" value=FieldString()
+		{
+			((SoundNode)getCurrentNode()).setMinBack(value);
+		}
+|	"maxFront" "=" value=FieldString()
+		{
+			((SoundNode)getCurrentNode()).setMaxFront(value);
+		}
+|	"minFront" "=" value=FieldString()
+		{
+			((SoundNode)getCurrentNode()).setMinFront(value);
+		}
+|	"priority" "=" value=FieldString()
+		{
+			((SoundNode)getCurrentNode()).setPriority(value);
+		}
+|	"direction" "=" value=FieldString()
+		{
+			((SoundNode)getCurrentNode()).setDirection(value);
+		}
+|	"location" "=" value=FieldString()
+		{
+			((SoundNode)getCurrentNode()).setLocation(value);
+		}
+}
+
+void SoundTag() :
+{}
+{
+	"<Sound"
+		{
+			SoundNode sound = new SoundNode();
+			addNode(sound);
+			PushNode(sound);
+		}
+}
+
+void Sound() :
+{}
+{
+	SoundTag() (SoundElement())* ( ("/>") | (">" ( AudioClip() | MovieTexture() ) "</Sound>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Sphere EMPTY >
+// <!ATTLIST Sphere
+//     radius CDATA "1"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void SphereElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"radius" "=" value=FieldString()
+		{
+			((SphereNode)getCurrentNode()).setRadius(value);
+		}
+}
+
+void SphereTag() :
+{}
+{
+	"<Sphere"
+		{
+			SphereNode sphere = new SphereNode();
+			addNode(sphere);
+			PushNode(sphere);
+		}
+}
+
+void Sphere() :
+{}
+{
+	SphereTag() (SphereElement())* ( ("/>") | (">" "</Sphere>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT SphereSensor EMPTY >
+// <!ATTLIST SphereSensor 
+//     autoOffset (true|false) "true"
+//     enabled    (true|false) "true"
+//     offset     CDATA "(0 1 0 0)"
+//     isActive   (true|false) "false"
+//     rotation   CDATA "(0 1 0 0)"
+//     trackPoint CDATA "(0 0 0)"
+//     DEF ID         #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void SphereSensorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"offset" "=" value=FieldString()
+		{
+			((SphereSensorNode)getCurrentNode()).setOffset(value);
+		}
+|	"enabled" "=" value=FieldString()
+		{
+			((SphereSensorNode)getCurrentNode()).setEnabled(value);
+		}
+|	"autoOffset" "=" value=FieldString()
+		{
+			((SphereSensorNode)getCurrentNode()).setAutoOffset(value);
+		}
+|	"rotation" "=" value=FieldString()
+		{
+			((SphereSensorNode)getCurrentNode()).setRotation(value);
+		}
+|	"trackPoint" "=" value=FieldString()
+		{
+			((SphereSensorNode)getCurrentNode()).setTrackPoint(value);
+		}
+|	"isActive" "=" value=FieldString()
+		{
+			((SphereSensorNode)getCurrentNode()).setIsActive(value);
+		}
+}
+
+void SphereSensorTag() :
+{}
+{
+	"<SphereSensor"
+		{
+			SphereSensorNode sensor = new SphereSensorNode();
+			addNode(sensor);
+			PushNode(sensor);
+		}
+}
+
+void SphereSensor() :
+{}
+{
+	SphereSensorTag() (SphereSensorElement())* ( ("/>") | (">" "</SphereSensor>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT SpotLight EMPTY >
+// <!ATTLIST SpotLight
+//     ambientIntensity CDATA "0"
+//     attenuation      CDATA "(1 0 0)"
+//     beamWidth        CDATA "1.570796"
+//     color            CDATA "(1 1 1)"
+//     cutOffAngle      CDATA ".785398"
+//     direction        CDATA "(0 0 -1)"
+//     intensity        CDATA "1"
+//     location         CDATA "(0 0 0)"
+//     on               (true|false) "true"
+//     radius           CDATA "100"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void SpotLightElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"on" "=" value=FieldString()
+		{
+			((SpotLightNode)getCurrentNode()).setOn(value);
+		}
+|	"intensity" "=" value=FieldString()
+		{
+			((SpotLightNode)getCurrentNode()).setIntensity(value);
+		}
+|	"ambientIntensity" "=" value=FieldString()
+		{
+			((SpotLightNode)getCurrentNode()).setAmbientIntensity(value);
+		}
+|	"beamWidth" "=" value=FieldString()
+		{
+			((SpotLightNode)getCurrentNode()).setBeamWidth(value);
+		}
+|	"cutOffAngle" "=" value=FieldString()
+		{
+			((SpotLightNode)getCurrentNode()).setCutOffAngle(value);
+		}
+|	"color" "=" value=FieldString()
+		{
+			((SpotLightNode)getCurrentNode()).setColor(value);
+		}
+|	"direction" "=" value=FieldString()
+		{
+			((SpotLightNode)getCurrentNode()).setDirection(value);
+		}
+|	"location" "=" value=FieldString()
+		{
+			((SpotLightNode)getCurrentNode()).setLocation(value);
+		}
+|	"attenuation" "=" value=FieldString()
+		{
+			((SpotLightNode)getCurrentNode()).setAttenuation(value);
+		}
+|	"radius" "=" value=FieldString()
+		{
+			((SpotLightNode)getCurrentNode()).setRadius(value);
+		}
+}
+
+void SpotLightTag() :
+{}
+{
+	"<SpotLight"
+		{
+			SpotLightNode light = new SpotLightNode();
+			addNode(light);
+			PushNode(light);
+		}
+}
+
+void SpotLight() :
+{}
+{
+	SpotLightTag() (SpotLightElement())* ( ("/>") | (">" "</SpotLight>") )
+		{
+			PopNode();
+		}
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Switch  %Children; >
+// <!ATTLIST Switch
+//     whichChoice CDATA "-1"
+//     DEF ID         #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void SwitchElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"whichChoice" "=" value=FieldString()
+		{
+			((SwitchNode)getCurrentNode()).setWhichChoice(value);
+		}
+}
+
+void SwitchTag() :
+{}
+{
+	"<Switch"
+		{
+			SwitchNode snode = new SwitchNode();
+			addNode(snode);
+			PushNode(snode);
+		}
+}
+
+void Switch() :
+{}
+{
+	SwitchTag() (SwitchElement())* ( ("/>") | (">" Children() "</Switch>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Text ( FontStyle? ) >
+// <!ATTLIST Text
+//     string    CDATA #IMPLIED
+//     length    CDATA #IMPLIED
+//     maxExtent CDATA "0"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void TextElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"string" "=" value=FieldString()
+		{
+//			((TextNode)getCurrentNode()).setStrings(value);
+			((TextNode)getCurrentNode()).addString(value);
+		}
+|	"length" "=" value=FieldString()
+		{
+			((TextNode)getCurrentNode()).setLengths(value);
+		}
+|	"maxExtent" "=" value=FieldString()
+		{
+			((TextNode)getCurrentNode()).setMaxExtent(value);
+		}
+}
+
+void TextTag() :
+{}
+{
+	"<Text"
+		{
+			TextNode text = new TextNode();
+			addNode(text);
+			PushNode(text);
+		}
+}
+
+void Text() :
+{}
+{
+	TextTag() (TextElement())* ( ("/>") | (">" (FontStyle())? "</Text>") )
+		{
+			getCurrentNode().initialize();
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT TextureCoordinate EMPTY >
+// <!ATTLIST TextureCoordinate
+//     point     CDATA #REQUIRED
+//     DEF ID         #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void TextureCoordinateElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"point" "=" value=FieldString()
+		{
+			((TextureCoordinateNode)getCurrentNode()).setPoints(value);
+		}
+}
+
+void TextureCoordinateTag() :
+{}
+{
+	"<TextureCoordinate"
+		{
+			TextureCoordinateNode texCoord = new TextureCoordinateNode();
+			addNode(texCoord);
+			PushNode(texCoord);
+		}
+}
+
+void TextureCoordinate() :
+{}
+{
+	TextureCoordinateTag() (TextureCoordinateElement())* ( ("/>") | (">" "</TextureCoordinate>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT TextureTransform EMPTY >
+// <!ATTLIST TextureTransform
+//     center      CDATA "(0 0)"
+//     rotation    CDATA "0"
+//     scale       CDATA "(1 1)"
+//     translation CDATA "(0 0)"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void TextureTransformElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"translation" "=" value=FieldString()
+		{
+			((TextureTransformNode)getCurrentNode()).setTranslation(value);
+		}
+
+|	"rotation" "=" value=FieldString()
+		{
+			((TextureTransformNode)getCurrentNode()).setRotation(value);
+		}
+|	"scale" "=" value=FieldString()
+		{
+			((TextureTransformNode)getCurrentNode()).setScale(value);
+		}
+|	"center" "=" value=FieldString()
+		{
+			((TextureTransformNode)getCurrentNode()).setCenter(value);
+		}
+}
+
+void TextureTransformTag() :
+{
+}
+{
+	"<TextureTransform"
+		{
+			TextureTransformNode textureTransform = new TextureTransformNode();
+			addNode(textureTransform);
+			PushNode(textureTransform);
+		}
+}
+
+void TextureTransform() :
+{}
+{
+	TextureTransformTag() (TextureTransformElement())* ( ("/>") | (">" "</TextureTransform>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT TimeSensor EMPTY >
+// <!ATTLIST TimeSensor
+//     cycleInterval CDATA "1.0"
+//     enabled       (true|false) "true"
+//     loop          (true|false) "false"
+//     startTime     CDATA "0"
+//     stopTime      CDATA "0"
+//     cycleTime     CDATA "0"
+//     fraction      CDATA "0"
+//     isActive      (true|false) "false"
+//     time          CDATA "0"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void TimeSensorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"enabled" "=" value=FieldString()
+		{
+			((TimeSensorNode)getCurrentNode()).setEnabled(value);
+		}
+|	"loop" "=" value=FieldString()
+		{
+			((TimeSensorNode)getCurrentNode()).setLoop(value);
+		}
+|	"cycleInterval" "=" value=FieldString()
+		{
+			((TimeSensorNode)getCurrentNode()).setCycleInterval(value);
+		}
+|	"startTime" "=" value=FieldString()
+		{
+			((TimeSensorNode)getCurrentNode()).setStartTime(value);
+		}
+|	"stopTime" "=" value=FieldString()
+		{
+			((TimeSensorNode)getCurrentNode()).setStopTime(value);
+		}
+|	"fraction" "=" value=FieldString()
+		{
+			((TimeSensorNode)getCurrentNode()).setFraction(value);
+		}
+|	"cycleTime" "=" value=FieldString()
+		{
+			((TimeSensorNode)getCurrentNode()).setCycleTime(value);
+		}
+|	"time" "=" value=FieldString()
+		{
+			((TimeSensorNode)getCurrentNode()).setTime(value);
+		}
+|	"isActive" "=" value=FieldString()
+		{
+			((TimeSensorNode)getCurrentNode()).setIsActive(value);
+		}
+}
+
+void TimeSensorTag() :
+{}
+{
+	"<TimeSensor"
+		{
+			TimeSensorNode sensor = new TimeSensorNode();
+			addNode(sensor);
+			PushNode(sensor);
+		}
+}
+
+void TimeSensor() :
+{}
+{
+	TimeSensorTag() (TimeSensorElement())* ( ("/>") | (">" "</TimeSensor>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT TouchSensor EMPTY >
+// <!ATTLIST TouchSensor
+//     enabled      (true|false) "true"
+//     hitNormal    CDATA "(0 0 1)"
+//     hitPoint     CDATA "(0 0 0)"
+//     hitTexCoord  CDATA "(0 0)"
+//     isActive     (true|false) "false"
+//     isOver       (true|false) "false"
+//     touchTime    CDATA "0"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void TouchSensorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"enabled" "=" value=FieldString()
+		{
+			((TouchSensorNode)getCurrentNode()).setEnabled(value);
+		}
+|	"hitNormal" "=" value=FieldString()
+		{
+			((TouchSensorNode)getCurrentNode()).setHitNormal(value);
+		}
+|	"hitPoint" "=" value=FieldString()
+		{
+			((TouchSensorNode)getCurrentNode()).setHitPoint(value);
+		}
+|	"hitTexCoord" "=" value=FieldString()
+		{
+			((TouchSensorNode)getCurrentNode()).setHitTexCoord(value);
+		}
+|	"isOver" "=" value=FieldString()
+		{
+			((TouchSensorNode)getCurrentNode()).setIsOver(value);
+		}
+|	"touchTime" "=" value=FieldString()
+		{
+			((TouchSensorNode)getCurrentNode()).setTouchTime(value);
+		}
+|	"isActive" "=" value=FieldString()
+		{
+			((TouchSensorNode)getCurrentNode()).setIsActive(value);
+		}
+}
+
+void TouchSensorTag() :
+{}
+{
+	"<TouchSensor"
+		{
+			TouchSensorNode sensor = new TouchSensorNode();
+			addNode(sensor);
+			PushNode(sensor);
+		}
+}
+
+void TouchSensor() :
+{}
+{
+	TouchSensorTag() (TouchSensorElement())* ( ("/>") | (">" "</TouchSensor>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Transform %Children; >
+// <!ATTLIST Transform 
+//     center           CDATA "(0 0 0)"
+//     rotation         CDATA "(0 0 1 0)"
+//     scale            CDATA "(1 1 1)"
+//     scaleOrientation CDATA "(0 0 1 0)"
+//     translation      CDATA "(0 0 0)"
+//     bboxCenter       CDATA "(0 0 0)"
+//     bboxSize         CDATA "(-1 -1 -1)"
+//     DEF ID       #IMPLIED 
+//     USE IDREF    #IMPLIED >
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void TransformElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"translation" "=" value=FieldString()
+		{
+			((TransformNode)getCurrentNode()).setTranslation(value);
+		}
+|	"rotation" "=" value=FieldString()
+		{
+			((TransformNode)getCurrentNode()).setRotation(value);
+		}
+|	"scale" "=" value=FieldString()
+		{
+			((TransformNode)getCurrentNode()).setScale(value);
+		}
+|	"scaleOrientation" "=" value=FieldString()
+		{
+			((TransformNode)getCurrentNode()).setScaleOrientation(value);
+		}
+|	"center" "=" value=FieldString()
+		{
+			((TransformNode)getCurrentNode()).setCenter(value);
+		}
+|	"bboxCenter" "=" value=FieldString()
+		{
+			((TransformNode)getCurrentNode()).setBoundingBoxCenter(value);
+		}
+|	"bboxSize" "=" value=FieldString()
+		{
+			((TransformNode)getCurrentNode()).setBoundingBoxSize(value);
+		}
+}
+
+void TransformTag() :
+{
+}
+{
+	"<Transform"
+		{
+			TransformNode transform = new TransformNode();
+			addNode(transform);
+			PushNode(transform);
+		}
+}
+
+void Transform() :
+{}
+{
+	TransformTag() (TransformElement())* ( ("/>") | (">" Children() "</Transform>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Viewpoint EMPTY >
+// <!ATTLIST Viewpoint
+//     fieldOfView CDATA "0.785398"
+//     jump        (true|false) "true"
+//     orientation CDATA "(0 0 1 0)"
+//     position    CDATA "(0 0 10)"
+//     description CDATA #IMPLIED
+//     bind        (true|false) "false"
+//     bindTime    CDATA "-1"
+//     isBound     (true|false) "false"
+//     examine     CDATA "(0 0 0)" 
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+// <!-- examine (point of rotation) is proposed addition, maybe belongs in NavigationInfo instead... -->
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void ViewpointElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"position" "=" value=FieldString()
+		{
+			((ViewpointNode)getCurrentNode()).setPosition(value);
+		}
+|	"orientation" "=" value=FieldString()
+		{
+			((ViewpointNode)getCurrentNode()).setOrientation(value);
+		}
+|	"fieldOfView" "=" value=FieldString()
+		{
+			((ViewpointNode)getCurrentNode()).setFieldOfView(value);
+		}
+|	"jump" "=" value=FieldString()
+		{
+			((ViewpointNode)getCurrentNode()).setJump(value);
+		}
+|	"description" "=" value=FieldString()
+		{
+			((ViewpointNode)getCurrentNode()).setDescription(value);
+		}
+|	"bind" "=" value=FieldString()	
+		{
+			((ViewpointNode)getCurrentNode()).setBind(value);
+		}
+|	"bindTime" "=" value=FieldString()	
+		{
+			((ViewpointNode)getCurrentNode()).setBindTime(value);
+		}
+|	"isBound" "=" value=FieldString()	
+		{
+			((ViewpointNode)getCurrentNode()).setIsBound(value);
+		}
+}
+
+void ViewpointTag() :
+{}
+{
+	"<Viewpoint"
+		{
+			ViewpointNode view = new ViewpointNode();
+			addNode(view);
+			PushNode(view);
+		}
+}
+
+void Viewpoint() :
+{}
+{
+	ViewpointTag() (ViewpointElement())* ( ("/>") | (">" "</Viewpoint>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT VisibilitySensor EMPTY >
+// <!ATTLIST VisibilitySensor 
+//     center    CDATA "(0 0 0)"
+//     enabled   (true|false) "true"
+//     size      CDATA "(0 0 0)"
+//     enterTime CDATA "0.0"
+//     exitTime  CDATA "0.0"
+//     isActive  (true|false) "false"
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void VisibilitySensorElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"center" "=" value=FieldString()
+		{
+			((VisibilitySensorNode)getCurrentNode()).setCenter(value);
+		}
+|	"size" "=" value=FieldString()
+		{
+			((VisibilitySensorNode)getCurrentNode()).setSize(value);
+		}
+|	"enabled" "=" value=FieldString()
+		{
+			((VisibilitySensorNode)getCurrentNode()).setEnabled(value);
+		}
+|	"isActive" "=" value=FieldString()
+		{
+			((VisibilitySensorNode)getCurrentNode()).setIsActive(value);
+		}
+}
+
+void VisibilitySensorTag() :
+{}
+{
+	"<VisibilitySensor"
+		{
+			VisibilitySensorNode sensor = new VisibilitySensorNode();
+			addNode(sensor);
+			PushNode(sensor);
+		}
+}
+
+void VisibilitySensor() :
+{}
+{
+	VisibilitySensorTag() (VisibilitySensorElement())* ( ("/>") | (">" "</VisibilitySensor>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT WorldInfo EMPTY >
+// <!ATTLIST WorldInfo 
+//     info  CDATA #IMPLIED
+//     title CDATA #IMPLIED
+//     DEF ID       #IMPLIED
+//     USE IDREF    #IMPLIED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void WorldInfoElement() :
+{
+	String	name;
+	String	value;
+}
+{
+	"DEF" "=" name=NodeName()
+		{
+			getCurrentNode().setName(name);
+		}
+|	"USE" "=" name=NodeName()	
+		{
+			setCurrentNodeAsInstance(name);
+		}
+|	"title" "=" value=FieldString()
+		{
+			((WorldInfoNode)getCurrentNode()).setTitle(value);
+		}
+|	"info" "=" value=FieldString()
+		{
+//			((WorldInfoNode)getCurrentNode()).setInfos(value);
+			((WorldInfoNode)getCurrentNode()).addInfo(value);
+		}
+}
+
+void WorldInfoTag() :
+{}
+{
+	"<WorldInfo"
+		{
+			WorldInfoNode winfo = new WorldInfoNode();
+			addNode(winfo);
+			PushNode(winfo);
+		}
+}
+
+void WorldInfo() :
+{}
+{
+	WorldInfoTag() (WorldInfoElement())* ( ("/>") | (">" "</WorldInfo>") )
+		{
+			PopNode();
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT eventIn EMPTY >
+// <!ATTLIST eventIn
+//     name  NMTOKEN      #REQUIRED
+//     type  %FieldTypes; #REQUIRED
+//     value CDATA        "">
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT eventOut EMPTY >
+// <!ATTLIST eventOut
+//     type  %FieldTypes; #REQUIRED
+//     name  NMTOKEN      #REQUIRED
+//     value CDATA        "">
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT field EMPTY >
+// <!ATTLIST field
+//     type  %FieldTypes; #REQUIRED
+//     name  NMTOKEN      #REQUIRED
+//     value CDATA        #REQUIRED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT exposedField    EMPTY >
+// <!ATTLIST exposedField
+//     type  %FieldTypes; #REQUIRED
+//     name  NMTOKEN      #REQUIRED
+//     value CDATA        #REQUIRED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT Route EMPTY >
+// <!ATTLIST Route
+//     fromNode    NMTOKEN  #REQUIRED
+//     toNode      NMTOKEN  #REQUIRED
+//     fromField   CDATA #REQUIRED
+//     toField     CDATA #REQUIRED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void RouteElement() :
+{
+	String	name;
+}
+{
+	"fromNode" "=" name=FieldString()
+		{
+			getRouteInfo().setFromNodeName(name);
+		}
+|	"toNode" "=" name=FieldString()
+		{
+			getRouteInfo().setToNodeName(name);
+		}
+|	"fromField" "=" name=FieldString()
+		{
+			getRouteInfo().setFromFieldName(name);
+		}
+|	"toField" "=" name=FieldString()
+		{
+			getRouteInfo().setToFieldName(name);
+		}
+}
+
+void RouteTag() :
+{}
+{
+	"<Route"
+		{
+			RouteInfo info = new RouteInfo();
+			setRouteInfo(info);
+		}
+}
+
+void Route() :
+{}
+{
+	RouteTag() (RouteElement())* ( ("/>") | (">" "</Route>") )
+		{
+			RouteInfo info = getRouteInfo();
+			addRoute(info);
+		}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!ELEMENT IS    EMPTY >
+// <!ATTLIST IS
+//     interfaceFieldName   NMTOKEN  #REQUIRED
+//      internalFieldName   NMTOKEN  #REQUIRED>
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// <!-- Main problem with Proto is that the original intent
+// #        was to be able to create cv97 "tags" on the fly, but
+// #        not sure this is part of XML.  As a good compromise the
+// #        following can do something very similar.
+// -->
+// 
+// <!-- choice of PROTO nodes restricted by ( %SceneNodes; )* rather than ( ANY )* ) >  -->
+// 
+// <!ELEMENT PROTO-declare ( (eventIn | eventOut | field | exposedField)+, IS*, ( %SceneNodes; ) ) >
+// <!ATTLIST PROTO-declare
+//     name NMTOKEN    #REQUIRED> <!-- the name given this type of PROTO -->
+// 
+// <!ELEMENT EXTERNPROTO-declare ( (eventIn | eventOut | field | exposedField)+ ) >
+// <!ATTLIST EXTERNPROTO-declare
+//     name NMTOKEN    #REQUIRED
+//     url  CDATA      #REQUIRED>
+// 
+// 
+// <!ELEMENT PROTO-instance ( defaultValue* )>
+// <!ATTLIST PROTO-instance
+//      DEF  NMTOKEN  #IMPLIED
+//      USE  NMTOKEN  #IMPLIED
+//      name NMTOKEN  #REQUIRED>
+// 
+// <!ELEMENT defaultValue EMPTY >
+// <!ATTLIST defaultValue
+//     name  NMTOKEN      #REQUIRED
+//     value CDATA        #REQUIRED>
+// 
+// 
+// <!--
+// #    Here PCDATA contains the utf8 for the fieldName + "=" + fieldValue pairs
+// 
+// <!ELEMENT PROTO-use (#PCDATA)>
+// <!ATTLIST PROTO-use
+//      DEF  NMTOKEN  #IMPLIED
+//      USE  NMTOKEN  #IMPLIED
+//      type NMTOKEN  #REQUIRED>
+// #-->
+// 
+// <!-- Example PROTO Usage 
+// # <PROTO type="myBox">
+// #    <field id="mySize" type="vec">
+// #    <Box size="mySize">
+// # </PROTO>
+// # 
+// # then somewhere else in a document
+// #
+// # < PROTO-use type="myBox" DEF="aTwoThreeTenBox" >mySize="2 3 10"</PROTO-use>
+// # 
+// # and thereafter
+// # 
+// # < PROTOUse USE="aTwoThreeTenBox"/>
+// #
+// # Note use of something more validating than CDATA for
+// # field values will break IS maps, and the ID in Fields is fairly
+// # meaningless. This is however more desirable than a PROTO Processing Instruction.
+// -->
+// <!-- pretty html generated with code2html.pl 0.6.2 by ppalfrad@cosy.sbg.ac.at -->
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////
+//
+//    General Tokens
+//
+///////////////////////////////////////////////
+
+TOKEN :
+{
+	< NUMBER			:	(["+","-"])?( ["0"-"9"] )+ >
+|	< ID				:	["a"-"z","A"-"Z", "_"] ( ["a"-"z","A"-"Z","0"-"9", "_"] )* >
+|	< STRING			:
+      ("\"" | "'")
+      (   (~["\"","\\"/*,"\n","\r"*/])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            )
+          )
+      )*
+      ("\"" | "'") >
+|	< FLOAT_NUMBER		:	(["+","-"])?(["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])?
+							| (["+","-"])?"." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])?
+							| (["+","-"])?(["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? >
+|	< HEX_NUMBER		: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+
+|	< EXPONENT			:	["e","E"] (["+","-"])? (["0"-"9"])+ >
+}
+
+void Input() :
+{}
+{
+	XML() <EOF>
+}

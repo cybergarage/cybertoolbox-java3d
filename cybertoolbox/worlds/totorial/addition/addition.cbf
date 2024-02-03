@@ -1,0 +1,47 @@
+#CBF V1.0 ascii
+Event {
+	name   "Start"
+	type   "SYSTEM"
+}
+Event {
+	name   "Frame"
+	type   "SYSTEM"
+	Diagram {
+		name "addition"
+		pos  72 216
+		size 320 240
+		Module {
+			class "System"
+			type  "Frame"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "String"
+			type  "Value"
+			name  "module2"
+			pos   64 96
+			value "100"
+		}
+		Module {
+			class "Numeric"
+			type  "Add"
+			name  "module3"
+			pos   128 48
+		}
+		Dataflow module1.0 to module3.0
+		Dataflow module2.0 to module3.1
+	}
+}
+Event {
+	name   "Mouse"
+	type   "SYSTEM"
+}
+Event {
+	name   "Keyboard"
+	type   "SYSTEM"
+}
+Event {
+	name   "Pickup"
+	type   "SYSTEM"
+}

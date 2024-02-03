@@ -1,0 +1,90 @@
+<CBF VERSION="201">
+	<EVENT NAME="Start" TYPE="SYSTEM">
+		<DIAGRAM NAME="initialize" XPOS="307" YPOS="654" WIDTH="584" HEIGHT="382">
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module1" XPOS="128" YPOS="32" VALUE="rotationDirection"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module2" XPOS="320" YPOS="32" VALUE="rotationSpeed"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module3" XPOS="96" YPOS="128" VALUE="0"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module4" XPOS="256" YPOS="128" VALUE="1"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module5" XPOS="416" YPOS="128" VALUE="2"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module6" XPOS="96" YPOS="192" VALUE="3"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module7" XPOS="256" YPOS="192" VALUE="4"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module8" XPOS="416" YPOS="192" VALUE="5"/>
+			<MODULE CLASS="String" TYPE="Rotation" NAME="module9" XPOS="32" YPOS="32" VALUE="0.0,0.0,1.0,0.0"/>
+			<MODULE CLASS="String" TYPE="Value" NAME="module10" XPOS="224" YPOS="32" VALUE="0"/>
+			<MODULE CLASS="String" TYPE="Rotation" NAME="module11" XPOS="32" YPOS="128" VALUE="0.0,0.0,1.0,0.0"/>
+			<MODULE CLASS="String" TYPE="Rotation" NAME="module12" XPOS="352" YPOS="128" VALUE="0.0,1.0,0.0,3.14"/>
+			<MODULE CLASS="String" TYPE="Rotation" NAME="module13" XPOS="192" YPOS="192" VALUE="1.0,0.0,0.0,1.57"/>
+			<MODULE CLASS="String" TYPE="Rotation" NAME="module14" XPOS="192" YPOS="128" VALUE="0.0,1.0,0.0,1.57"/>
+			<MODULE CLASS="String" TYPE="Rotation" NAME="module15" XPOS="32" YPOS="192" VALUE="0.0,1.0,0.0,-1.57"/>
+			<MODULE CLASS="String" TYPE="Rotation" NAME="module16" XPOS="352" YPOS="192" VALUE="0.0,0.0,1.0,-1.57"/>
+			<ROUTE OUT="module11.0" IN="module3.1"/>
+			<ROUTE OUT="module15.0" IN="module6.1"/>
+			<ROUTE OUT="module13.0" IN="module7.1"/>
+			<ROUTE OUT="module14.0" IN="module4.1"/>
+			<ROUTE OUT="module12.0" IN="module5.1"/>
+			<ROUTE OUT="module16.0" IN="module8.1"/>
+			<ROUTE OUT="module9.0" IN="module1.1"/>
+			<ROUTE OUT="module10.0" IN="module2.1"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Frame" TYPE="SYSTEM">
+		<DIAGRAM NAME="rotateDice" XPOS="162" YPOS="551" WIDTH="596" HEIGHT="348">
+			<MODULE CLASS="System" TYPE="Frame" NAME="module1" XPOS="0" YPOS="0"/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module2" XPOS="46" YPOS="35" VALUE="rotationDirection"/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module3" XPOS="48" YPOS="96" VALUE="rotationSpeed"/>
+			<MODULE CLASS="String" TYPE="Merge2Values" NAME="module4" XPOS="192" YPOS="64"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module5" XPOS="344" YPOS="104" VALUE="saikoro"/>
+			<MODULE CLASS="String" TYPE="Value" NAME="module6" XPOS="40" YPOS="216" VALUE="0"/>
+			<MODULE CLASS="Boolean" TYPE="Greater" NAME="module7" XPOS="208" YPOS="192"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module8" XPOS="208" YPOS="152" VALUE="rotation"/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module9" XPOS="48" YPOS="152" VALUE="rotation"/>
+			<MODULE CLASS="Numeric" TYPE="Add" NAME="module10" XPOS="110" YPOS="153"/>
+			<ROUTE OUT="module2.0" IN="module4.0"/>
+			<ROUTE OUT="module7.0" IN="module5.E"/>
+			<ROUTE OUT="module3.0" IN="module7.1"/>
+			<ROUTE OUT="module6.0" IN="module7.0"/>
+			<ROUTE OUT="module3.0" IN="module10.0"/>
+			<ROUTE OUT="module9.0" IN="module10.1"/>
+			<ROUTE OUT="module10.0" IN="module8.1"/>
+			<ROUTE OUT="module10.0" IN="module4.1"/>
+			<ROUTE OUT="module4.0" IN="module5.1"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Pickup" TYPE="SYSTEM">
+		<DIAGRAM NAME="changeRotation" XPOS="428" YPOS="180" WIDTH="674" HEIGHT="317">
+			<MODULE CLASS="System" TYPE="Pickup" NAME="module1" XPOS="0" YPOS="0"/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module2" XPOS="64" YPOS="32"/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module3" XPOS="64" YPOS="96"/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module4" XPOS="344" YPOS="24"/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module5" XPOS="64" YPOS="64"/>
+			<MODULE CLASS="String" TYPE="Merge3Values" NAME="module8" XPOS="144" YPOS="64"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module9" XPOS="256" YPOS="64" VALUE="rotationDirection"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module10" XPOS="544" YPOS="16" VALUE="rotationSpeed"/>
+			<MODULE CLASS="Misc" TYPE="Random" NAME="module11" XPOS="64" YPOS="192"/>
+			<MODULE CLASS="Filter" TYPE="Mul" NAME="module12" XPOS="160" YPOS="192" VALUE="6"/>
+			<MODULE CLASS="Filter" TYPE="Floor" NAME="module13" XPOS="224" YPOS="192"/>
+			<MODULE CLASS="Misc" TYPE="GetData" NAME="module14" XPOS="320" YPOS="192" VALUE="4"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module15" XPOS="480" YPOS="192" VALUE="saikoro"/>
+			<MODULE CLASS="Boolean" TYPE="Not" NAME="module16" XPOS="328" YPOS="120"/>
+			<MODULE CLASS="String" TYPE="Value" NAME="module17" XPOS="344" YPOS="80" VALUE="0"/>
+			<MODULE CLASS="String" TYPE="Selector" NAME="module18" XPOS="456" YPOS="48"/>
+			<MODULE CLASS="Misc" TYPE="SetData" NAME="module19" XPOS="544" YPOS="88" VALUE="rotation"/>
+			<ROUTE OUT="module2.0" IN="module8.0"/>
+			<ROUTE OUT="module5.0" IN="module8.1"/>
+			<ROUTE OUT="module3.0" IN="module8.2"/>
+			<ROUTE OUT="module8.0" IN="module9.1"/>
+			<ROUTE OUT="module1.0" IN="module9.E"/>
+			<ROUTE OUT="module11.0" IN="module12.0"/>
+			<ROUTE OUT="module12.0" IN="module13.0"/>
+			<ROUTE OUT="module13.0" IN="module14.0"/>
+			<ROUTE OUT="module1.0" IN="module16.0"/>
+			<ROUTE OUT="module16.0" IN="module15.E"/>
+			<ROUTE OUT="module14.0" IN="module15.1"/>
+			<ROUTE OUT="module1.0" IN="module18.E"/>
+			<ROUTE OUT="module4.0" IN="module18.0"/>
+			<ROUTE OUT="module17.0" IN="module18.1"/>
+			<ROUTE OUT="module18.0" IN="module10.1"/>
+			<ROUTE OUT="module17.0" IN="module19.1"/>
+		</DIAGRAM>
+	</EVENT>
+</CBF>

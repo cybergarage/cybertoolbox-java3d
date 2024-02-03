@@ -1,0 +1,681 @@
+#CBF V1.0 ascii
+Event {
+	name   "Start"
+	type   "SYSTEM"
+}
+Event {
+	name   "Frame"
+	type   "SYSTEM"
+}
+Event {
+	name   "Mouse"
+	type   "SYSTEM"
+}
+Event {
+	name   "Keyboard"
+	type   "SYSTEM"
+}
+Event {
+	name   "Pickup"
+	type   "SYSTEM"
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "cKey"
+	Diagram {
+		name "playCKey"
+		pos  214 132
+		size 421 294
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "cKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 32
+			value "0.0,0.0,-0.5"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module6"
+			pos   64 96
+			value "0.0,0.0,0.0"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module8"
+			pos   288 64
+			value "cKey.au"
+		}
+		Dataflow module1.0 to module3.E
+		Dataflow module3.0 to module2.1
+		Dataflow module5.0 to module3.0
+		Dataflow module6.0 to module3.1
+		Dataflow module1.0 to module8.E
+	}
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "dKey"
+	Diagram {
+		name "playDKey"
+		pos  218 206
+		size 394 243
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "dKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module4"
+			pos   64 32
+			value "1.0,0.0,-0.5"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 96
+			value "1.0,0.0,0.0"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module6"
+			pos   288 64
+			value "dKey.au"
+		}
+		Dataflow module3.0 to module2.1
+		Dataflow module4.0 to module3.0
+		Dataflow module5.0 to module3.1
+		Dataflow module1.0 to module6.E
+		Dataflow module1.0 to module3.E
+	}
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "eKey"
+	Diagram {
+		name "playEKey"
+		pos  277 298
+		size 366 240
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "eKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module4"
+			pos   64 32
+			value "2.0,0.0,-0.5"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 96
+			value "2.0,0.0,0.0"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module6"
+			pos   288 64
+			value "eKey.au"
+		}
+		Dataflow module3.0 to module2.1
+		Dataflow module4.0 to module3.0
+		Dataflow module5.0 to module3.1
+		Dataflow module1.0 to module6.E
+		Dataflow module1.0 to module3.E
+	}
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "fKey"
+	Diagram {
+		name "playFKey"
+		pos  266 353
+		size 355 240
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "fKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module4"
+			pos   64 32
+			value "3.0,0.0,-0.5"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 96
+			value "3.0,0.0,0.0"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module6"
+			pos   288 64
+			value "fKey.au"
+		}
+		Dataflow module3.0 to module2.1
+		Dataflow module4.0 to module3.0
+		Dataflow module5.0 to module3.1
+		Dataflow module1.0 to module3.E
+		Dataflow module1.0 to module6.E
+	}
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "gKey"
+	Diagram {
+		name "playGKey"
+		pos  294 391
+		size 320 240
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "gKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module4"
+			pos   64 32
+			value "4.0,0.0,-0.5"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 96
+			value "4.0,0.0,0.0"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module6"
+			pos   288 64
+			value "gKey.au"
+		}
+		Dataflow module3.0 to module2.1
+		Dataflow module4.0 to module3.0
+		Dataflow module5.0 to module3.1
+		Dataflow module1.0 to module6.E
+		Dataflow module1.0 to module3.E
+	}
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "aKey"
+	Diagram {
+		name "olayAKey"
+		pos  315 371
+		size 320 240
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "aKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module4"
+			pos   64 32
+			value "5.0,0.0,-0.5"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 96
+			value "5.0,0.0,0.0"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module6"
+			pos   288 64
+			value "aKey.au"
+		}
+		Dataflow module3.0 to module2.1
+		Dataflow module4.0 to module3.0
+		Dataflow module5.0 to module3.1
+		Dataflow module1.0 to module3.E
+		Dataflow module1.0 to module6.E
+	}
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "bKey"
+	Diagram {
+		name "playBKey"
+		pos  312 490
+		size 320 240
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "bKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module4"
+			pos   64 32
+			value "6.0,0.0,-0.5"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 96
+			value "6.0,0.0,0.0"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module6"
+			pos   288 64
+			value "bKey.au"
+		}
+		Dataflow module3.0 to module2.1
+		Dataflow module4.0 to module3.0
+		Dataflow module5.0 to module3.1
+		Dataflow module1.0 to module6.E
+		Dataflow module1.0 to module3.E
+	}
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "csKey"
+	Diagram {
+		name "playCsKey"
+		pos  328 454
+		size 372 240
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "csKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module4"
+			pos   64 32
+			value "0.5,0.9,0.2"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 96
+			value "0.5,0.9,0.4"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module6"
+			pos   288 64
+			value "csKey.au"
+		}
+		Dataflow module3.0 to module2.1
+		Dataflow module4.0 to module3.0
+		Dataflow module5.0 to module3.1
+		Dataflow module1.0 to module3.E
+		Dataflow module1.0 to module6.E
+	}
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "dsKey"
+	Diagram {
+		name "playDsKey"
+		pos  326 388
+		size 369 282
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "dsKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module4"
+			pos   72 40
+			value "1.5,0.9,0.2"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 96
+			value "1.5,0.9,0.4"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module6"
+			pos   288 64
+			value "dsKey.au"
+		}
+		Dataflow module3.0 to module2.1
+		Dataflow module4.0 to module3.0
+		Dataflow module5.0 to module3.1
+		Dataflow module1.0 to module3.E
+		Dataflow module1.0 to module6.E
+	}
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "esKey"
+	Diagram {
+		name "playEsKey"
+		pos  298 472
+		size 320 240
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "esKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module4"
+			pos   64 32
+			value "2.5,0.9,0.2"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 96
+			value "2.5,0.9,0.4"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module6"
+			pos   288 64
+			value "esKey.au"
+		}
+		Dataflow module3.0 to module2.1
+		Dataflow module4.0 to module3.0
+		Dataflow module5.0 to module3.1
+		Dataflow module1.0 to module6.E
+		Dataflow module1.0 to module3.E
+	}
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "gsKey"
+	Diagram {
+		name "playGsKey"
+		pos  286 416
+		size 320 240
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "gsKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module4"
+			pos   64 32
+			value "4.5,0.9,0.2"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 96
+			value "4.5,0.9,0.4"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module6"
+			pos   288 64
+			value "gsKey.au"
+		}
+		Dataflow module3.0 to module2.1
+		Dataflow module4.0 to module3.0
+		Dataflow module5.0 to module3.1
+		Dataflow module1.0 to module3.E
+		Dataflow module1.0 to module6.E
+	}
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "asKey"
+	Diagram {
+		name "playAsKey"
+		pos  294 413
+		size 320 240
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Transform"
+			type  "SetTranslation"
+			name  "module2"
+			pos   224 64
+			value "asKey"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module3"
+			pos   128 64
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module4"
+			pos   64 32
+			value "5.5,0.9,0.2"
+		}
+		Module {
+			class "String"
+			type  "Position"
+			name  "module5"
+			pos   64 96
+			value "5.5,0.9,0.4"
+		}
+		Module {
+			class "Misc"
+			type  "PlaySound"
+			name  "module6"
+			pos   288 64
+			value "asKey.au"
+		}
+		Dataflow module3.0 to module2.1
+		Dataflow module4.0 to module3.0
+		Dataflow module5.0 to module3.1
+		Dataflow module1.0 to module6.E
+		Dataflow module1.0 to module3.E
+	}
+}

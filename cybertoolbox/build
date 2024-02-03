@@ -1,0 +1,8 @@
+#!/Cygnus/B19/H-i386-cygwin32/bin/tcsh
+setenv CLASSPATH ".\;\src\java;\src\java\cybertoolbox;\src\java\cybertoolbox\modules\scripts"
+rm *.class
+rm modules/scripts/*.class
+javac -O -deprecation *.java
+cd modules/scripts
+javac -O -deprecation *.java
+cd ../..

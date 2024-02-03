@@ -1,0 +1,621 @@
+options {
+  STATIC = false;
+  LOOKAHEAD = 1;
+  DEBUG_PARSER = false;
+  ERROR_REPORTING = true;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  JAVA_UNICODE_ESCAPE = false;
+  UNICODE_INPUT = false;
+}
+
+PARSER_BEGIN(CTBParser200)
+
+public class CTBParser200 extends CTBParser {
+
+	private final static int DIAGRAM_PARENT_IS_EVENT	= 0;
+	private final static int DIAGRAM_PARENT_IS_MODULE	= 1;
+	
+	private int mDiagramParentType;
+	
+	private void setDiagramParentType(int type) {
+		mDiagramParentType = type;
+	}
+
+	private int getDiagramParentType() {
+		return mDiagramParentType;
+	}
+	
+	private String getRouteModuleName(String param) {
+		if (param == null)
+			return null;
+		int idx = param.indexOf('.');
+		if (idx < 0)
+			return null;
+		
+		return new String(param.getBytes(), 0, idx);
+	}
+
+	public int getRouteModuleNode(String param) {
+		if (param == null)
+			return 0;
+		int idx = param.indexOf('.');
+		if (idx < 0)
+			return 0;
+			
+		String numberStr = new String(param.getBytes(), idx+1, param.length()-(idx+1));
+		if (numberStr.equalsIgnoreCase("E") == true)
+			return -1;
+		return Integer.parseInt(numberStr);
+	}
+}
+
+PARSER_END(CTBParser200)
+
+///////////////////////////////////////////////
+//	SKIP
+///////////////////////////////////////////////
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <COMMENT : "#" (~["\n", "\r"])* ("\n" | "\r\n") >
+}
+
+///////////////////////////////////////////////
+//	StringToken
+///////////////////////////////////////////////
+
+String StringToken() :
+{
+	Token	t;
+}
+{
+	t=<STRING>
+		{
+			return t.image.substring(1, t.image.length()-1);
+		}
+}
+
+///////////////////////////////////////////////
+//	StringIntegerToken
+///////////////////////////////////////////////
+
+int StringIntegerToken() :
+{
+	String	strValue;
+	int		value;
+}
+{
+	strValue=StringToken()
+		{
+			value = 0;
+			try {
+				value = Integer.parseInt(strValue);	
+			}
+			catch (NumberFormatException nfe) {}
+			return value;
+		}
+}
+
+///////////////////////////////////////////////
+//	IntegerToken
+///////////////////////////////////////////////
+
+int IntegerToken() :
+{
+	Token t;
+	int	value;
+}
+{
+	t=<NUMBER>
+		{
+			return Integer.parseInt(t.image);
+		}
+|	value=StringIntegerToken()
+		{
+			return value;
+		}
+}
+
+///////////////////////////////////////////////
+//	Tag Param
+///////////////////////////////////////////////
+
+String VersionParam() :
+{
+	String name = null;
+}
+{
+	"VERSION=" name=StringToken()
+		{
+			return name;
+		}
+}
+
+String NameParam() :
+{
+	String name = null;
+}
+{
+	"NAME=" name=StringToken()
+		{
+			return name;
+		}
+}
+
+String ClassParam() :
+{
+	String cname = null;
+}
+{
+	"CLASS=" cname=StringToken()
+		{
+			return cname;
+		}
+}
+
+String TypeParam() :
+{
+	String type = null;
+}
+{
+	"TYPE=" type=StringToken()
+		{
+			return type;
+		}
+}
+
+String OptionParam() :
+{
+	String opt = null;
+}
+{
+	"OPTION=" opt=StringToken()
+		{
+			return opt;
+		}
+}
+
+String ValueParam() :
+{
+	String value = null;
+}
+{
+	"VALUE=" value=StringToken()
+		{
+			return value;
+		}
+}
+
+int XPosParam() :
+{
+	int		value;
+	String	valueString;
+}
+{
+	"XPOS=" value=IntegerToken()
+		{
+			return value;
+		}
+}
+
+int YPosParam() :
+{
+	int	value;
+}
+{
+	"YPOS=" value=IntegerToken()
+		{
+			return value;
+		}
+}
+
+int WidthParam() :
+{
+	int	value;
+}
+{
+	"WIDTH=" value=IntegerToken()
+		{
+			return value;
+		}
+}
+
+int HeightParam() :
+{
+	int	value;
+}
+{
+	"HEIGHT=" value=IntegerToken()
+		{
+			return value;
+		}
+}
+
+String OutModuleParam() :
+{
+	String name = null;
+}
+{
+	"OUT=" name=StringToken()
+		{
+			return name;
+		}
+}
+
+String InModuleParam() :
+{
+	String name = null;
+}
+{
+	"IN=" name=StringToken()
+		{
+			return name;
+		}
+}
+
+///////////////////////////////////////////////
+//	CBF (CyberToolbox Behavior File format)
+///////////////////////////////////////////////
+
+void CBFTag() :
+{
+	String	verString;
+}
+{
+	"<CBF" verString=VersionParam() ">"
+		{
+			setFormatType(FORMATTYPE_CBF);
+			setVersionString(verString);
+		}
+}
+
+void CBF() :
+{
+}
+{
+	CBFTag() (Event())* "</CBF>"
+		{
+		}
+}
+
+///////////////////////////////////////////////
+//	CDF (CyberToolbox Diagram File format)
+///////////////////////////////////////////////
+
+void CDFTag() :
+{
+	String	verString;
+}
+{
+	"<CDF" verString=VersionParam() ">"
+		{
+			setFormatType(FORMATTYPE_CDF);
+			setVersionString(verString);
+		}
+}
+
+void CDF() :
+{
+	String	verString;
+}
+{
+	CDFTag() (Diagram())* "</CDF>"
+		{
+		}
+}
+
+///////////////////////////////////////////////
+//	Event
+///////////////////////////////////////////////
+
+void EventParam() :
+{
+	String	value;
+}
+{
+	value=NameParam()	
+		{
+			getCurrentEvent().setName(value);
+		}
+|	value=OptionParam()	
+		{
+			getCurrentEvent().setOptionString(value);
+		}
+|	value=TypeParam()	
+		{
+			getCurrentEvent().setAttribute(value);
+		}
+}
+
+void EventTag() :
+{
+}
+{
+	"<EVENT"
+		{
+			Event event = new Event();
+			event.setWorld(getWorld());
+			addEvent(event);
+			setDiagramParentType(DIAGRAM_PARENT_IS_EVENT);
+			pushObject(event);
+		}
+}
+
+void Event() :
+{}
+{
+	EventTag() (EventParam())* ">" (Diagram())* "</EVENT>"
+		{
+			Event	event = getCurrentEvent();
+			
+			String	name					= event.getName();
+			String	optionString		= event.getOptionString();
+			int		attribute			= event.getAttribute();
+			
+			EventType eventType = null;
+			
+			switch (attribute) {
+			case EventType.ATTRIBUTE_SYSTEM:
+				{
+					eventType = getWorld().getSystemEventType(name);
+				}
+				break;
+			case EventType.ATTRIBUTE_USER:
+				{
+					eventType = getWorld().getUserEventType(name);
+					event.setOptionString(optionString);
+				}
+				break;
+			default: // case EventType.ATTRIBUTE_NONE:
+				{
+					if (optionString != null) {
+						eventType = getWorld().getUserEventType(name);
+						event.setOptionString(optionString);
+					}
+					else
+						eventType = getWorld().getSystemEventType(name);
+				}
+				break;
+			}
+				
+			event.setEventType(eventType);
+			
+			popObject();
+		}
+}
+
+///////////////////////////////////////////////
+//	Diagram
+///////////////////////////////////////////////
+
+void DiagramParam() :
+{
+	String	strValue;
+	int		intValue;
+}
+{
+	strValue=NameParam()	
+		{
+			getCurrentDiagram().setName(strValue);
+		}
+|	intValue=XPosParam()	
+		{
+			getCurrentDiagram().setXPosition(intValue);
+		}
+|	intValue=YPosParam()	
+		{
+			getCurrentDiagram().setYPosition(intValue);
+		}
+|	intValue=WidthParam()	
+		{
+			getCurrentDiagram().setWidth(intValue);
+		}
+|	intValue=HeightParam()	
+		{
+			getCurrentDiagram().setHeight(intValue);
+		}
+}
+
+void DiagramTag() :
+{}
+{
+	"<DIAGRAM"
+		{
+			Diagram dgm = new Diagram();
+			
+			switch (getDiagramParentType()) {
+			case DIAGRAM_PARENT_IS_EVENT:
+				{
+					if (getFormatType() == FORMATTYPE_CBF) {
+						Event event = getCurrentEvent();
+						event.addDiagram(dgm);
+					}
+					if (getFormatType() == FORMATTYPE_CDF) {
+						addDiagram(dgm);
+					}	
+				}
+				break;
+			case DIAGRAM_PARENT_IS_MODULE:
+				{
+					ModuleInfo modInfo = getCurrentModuleInfo();
+					modInfo.setInsideDiagram(dgm);
+				}
+				break;
+			}
+			
+			pushObject(dgm);
+		}
+}
+
+void Diagram() :
+{}
+{
+	DiagramTag() (DiagramParam())* ">" (Module() | Route())* "</DIAGRAM>"
+		{
+			popObject();
+		}
+}
+
+///////////////////////////////////////////////
+//	Module
+///////////////////////////////////////////////
+
+void ModuleParam() :
+{
+	String	strValue;
+	int		intValue;
+}
+{
+	strValue=ClassParam()	
+		{
+			getCurrentModuleInfo().setClassName(strValue);
+		}
+|	strValue=TypeParam()	
+		{
+			getCurrentModuleInfo().setTypeName(strValue);
+		}
+|	strValue=NameParam()	
+		{
+			getCurrentModuleInfo().setName(strValue);
+		}
+|	strValue=ValueParam()	
+		{
+			getCurrentModuleInfo().setValue(strValue);
+		}
+|	intValue=XPosParam()	
+		{
+			getCurrentModuleInfo().setXPosition(intValue);
+		}
+|	intValue=YPosParam()	
+		{
+			getCurrentModuleInfo().setYPosition(intValue);
+		}
+}
+
+void ModuleTag() :
+{}
+{
+	"<MODULE"
+		{
+			ModuleInfo modInfo = new ModuleInfo();
+			setDiagramParentType(DIAGRAM_PARENT_IS_MODULE);
+			pushObject(modInfo);
+		}
+}
+
+void Module() :
+{}
+{
+	ModuleTag() (ModuleParam())* (("/>") | (">" Diagram() "</MODULE>"))
+		{
+			ModuleInfo modInfo = getCurrentModuleInfo();
+			ModuleType modType = getWorld().getModuleType(modInfo.getClassName(), modInfo.getTypeName());
+			
+			popObject();
+			
+			Diagram dgm = getCurrentDiagram();
+			if (modType != null) {
+				Module module = dgm.addModule(modType);
+				if (module != null) {
+					module.setName(modInfo.getName());
+					module.setValue(modInfo.getValue());
+					module.setPosition(modInfo.getXPosition(), modInfo.getYPosition());
+					if (module.isInsideDiagram() == true) { 
+						Diagram insideDgm = modInfo.getInsideDiagram();
+						insideDgm.setParentModule(module);
+						module.setInsideDiagram(insideDgm);
+					}
+				}
+			}
+			else
+				Debug.warning("Coundn't find the module type (" + modInfo.getClassName() + ", " + modInfo.getTypeName() + ")");
+			setDiagramParentType(DIAGRAM_PARENT_IS_EVENT);
+		}
+}
+
+///////////////////////////////////////////////
+//	ROUTE
+///////////////////////////////////////////////
+
+String ModuleNameToken() :
+{
+	Token	t;
+}
+{
+	t=<ID>
+		{
+			return t.image;
+		}
+}
+
+int NodeNumberToken() :
+{
+	int	number;
+}
+{
+	number=IntegerToken()	
+		{
+			return number;
+		}
+|	"E"	
+		{
+			return -1;
+		}
+}
+
+void Route() :
+{
+	String	inModuleParam;
+	String	outModuleParam;
+	String	inModuleName;
+	int		inModuleNode;
+	String	outModuleName;
+	int		outModuleNode;
+}
+{
+	"<ROUTE" outModuleParam=OutModuleParam() inModuleParam=InModuleParam() "/>"
+		{
+			inModuleName	= getRouteModuleName(inModuleParam);
+			inModuleNode	= getRouteModuleNode(inModuleParam);
+			outModuleName	= getRouteModuleName(outModuleParam);
+			outModuleNode	= getRouteModuleNode(outModuleParam);
+			getCurrentDiagram().addDataflow(outModuleName, outModuleNode, inModuleName, inModuleNode);
+		}
+}
+
+///////////////////////////////////////////////
+//
+//	General Tokens
+//
+///////////////////////////////////////////////
+
+TOKEN :
+{
+	< NUMBER			:	(["+","-"])?( ["0"-"9"] )+ >
+|	< ID				:	["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9", "_"] )* >
+|
+	< STRING			:
+      "\""
+      (   (~["\"","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            )
+          )
+      )*
+      "\""
+	>
+}
+
+void Input() :
+{}
+{
+	(CBF() | CDF()) <EOF>
+}
+

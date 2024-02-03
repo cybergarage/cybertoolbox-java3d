@@ -1,0 +1,191 @@
+#CBF V1.0 ascii
+Event {
+	name   "Start"
+	type   "SYSTEM"
+}
+Event {
+	name   "Frame"
+	type   "SYSTEM"
+}
+Event {
+	name   "Mouse"
+	type   "SYSTEM"
+}
+Event {
+	name   "Keyboard"
+	type   "SYSTEM"
+}
+Event {
+	name   "Pickup"
+	type   "SYSTEM"
+}
+Event {
+	name   "Clock"
+	type   "USER"
+	option "1"
+	Diagram {
+		name "setClock"
+		pos  70 522
+		size 726 667
+		Module {
+			class "System"
+			type  "Clock"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "Misc"
+			type  "GetTime"
+			name  "module2"
+			pos   32 64
+		}
+		Module {
+			class "Filter"
+			type  "Mul"
+			name  "module3"
+			pos   184 32
+			value "-6"
+		}
+		Module {
+			class "Math"
+			type  "Degree2Radian"
+			name  "module4"
+			pos   224 64
+		}
+		Module {
+			class "String"
+			type  "Direction"
+			name  "module5"
+			pos   256 152
+			value "0.0,0.0,1.0"
+		}
+		Module {
+			class "String"
+			type  "Merge2Values"
+			name  "module6"
+			pos   352 96
+		}
+		Module {
+			class "Transform"
+			type  "SetRotation"
+			name  "module7"
+			pos   448 96
+			value "colockSec"
+		}
+		Module {
+			class "Filter"
+			type  "Mul"
+			name  "module8"
+			pos   160 192
+			value "-6"
+		}
+		Module {
+			class "Transform"
+			type  "SetRotation"
+			name  "module10"
+			pos   568 208
+			value "colockMin"
+		}
+		Module {
+			class "Transform"
+			type  "SetRotation"
+			name  "module11"
+			pos   512 352
+			value "colockHour"
+		}
+		Module {
+			class "String"
+			type  "Merge2Values"
+			name  "module12"
+			pos   464 200
+		}
+		Module {
+			class "String"
+			type  "Merge2Values"
+			name  "module13"
+			pos   394 302
+		}
+		Module {
+			class "Filter"
+			type  "Mul"
+			name  "module15"
+			pos   170 366
+			value "-30"
+		}
+		Module {
+			class "Numeric"
+			type  "Sub"
+			name  "module18"
+			pos   282 238
+		}
+		Module {
+			class "Filter"
+			type  "Div"
+			name  "module19"
+			pos   178 310
+			value "10"
+		}
+		Module {
+			class "Filter"
+			type  "Div"
+			name  "module20"
+			pos   202 430
+			value "2"
+		}
+		Module {
+			class "Filter"
+			type  "Div"
+			name  "module21"
+			pos   258 494
+			value "120"
+		}
+		Module {
+			class "Numeric"
+			type  "Sub"
+			name  "module22"
+			pos   274 382
+		}
+		Module {
+			class "Numeric"
+			type  "Sub"
+			name  "module23"
+			pos   352 448
+		}
+		Module {
+			class "Math"
+			type  "Degree2Radian"
+			name  "module24"
+			pos   410 430
+		}
+		Module {
+			class "Math"
+			type  "Degree2Radian"
+			name  "module25"
+			pos   360 248
+		}
+		Dataflow module2.2 to module3.0
+		Dataflow module3.0 to module4.0
+		Dataflow module6.0 to module7.1
+		Dataflow module5.0 to module6.0
+		Dataflow module4.0 to module6.1
+		Dataflow module2.1 to module8.0
+		Dataflow module12.0 to module10.1
+		Dataflow module13.0 to module11.1
+		Dataflow module5.0 to module12.0
+		Dataflow module5.0 to module13.0
+		Dataflow module2.0 to module15.0
+		Dataflow module2.1 to module20.0
+		Dataflow module2.0 to module21.0
+		Dataflow module2.1 to module19.0
+		Dataflow module15.0 to module22.0
+		Dataflow module22.0 to module23.0
+		Dataflow module21.0 to module23.1
+		Dataflow module25.0 to module12.1
+		Dataflow module18.0 to module25.0
+		Dataflow module8.0 to module18.0
+		Dataflow module19.0 to module18.1
+		Dataflow module23.0 to module24.0
+		Dataflow module24.0 to module13.1
+		Dataflow module20.0 to module22.1
+	}
+}

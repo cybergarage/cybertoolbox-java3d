@@ -1,0 +1,38 @@
+<CBF VERSION="201">
+	<EVENT NAME="Start" TYPE="SYSTEM">
+		<DIAGRAM NAME="initialize" XPOS="228" YPOS="724" WIDTH="320" HEIGHT="198">
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module1" XPOS="160" YPOS="64" VALUE="car"/>
+			<MODULE CLASS="String" TYPE="Rotation" NAME="module2" XPOS="32" YPOS="64" VALUE="0.0,0.0,1.0,0.0"/>
+			<ROUTE OUT="module2.0" IN="module1.1"/>
+		</DIAGRAM>
+	</EVENT>
+	<EVENT NAME="Mouse" TYPE="SYSTEM">
+		<DIAGRAM NAME="rotateCar" XPOS="224" YPOS="465" WIDTH="676" HEIGHT="278">
+			<MODULE CLASS="System" TYPE="Mouse" NAME="module1" XPOS="0" YPOS="0"/>
+			<MODULE CLASS="Misc" TYPE="GetScreenSize" NAME="module2" XPOS="32" YPOS="64"/>
+			<MODULE CLASS="Filter" TYPE="Mul" NAME="module4" XPOS="96" YPOS="96" VALUE="0.5"/>
+			<MODULE CLASS="Numeric" TYPE="Sub" NAME="module8" XPOS="160" YPOS="48"/>
+			<MODULE CLASS="Filter" TYPE="Mul" NAME="module9" XPOS="224" YPOS="96" VALUE="0.01"/>
+			<MODULE CLASS="String" TYPE="Direction" NAME="module10" XPOS="376" YPOS="0" VALUE="0.0,1.0,0.0"/>
+			<MODULE CLASS="String" TYPE="Direction" NAME="module11" XPOS="376" YPOS="128" VALUE="1.0,0.0,0.0"/>
+			<MODULE CLASS="String" TYPE="Divide2Values" NAME="module12" XPOS="288" YPOS="96"/>
+			<MODULE CLASS="String" TYPE="Merge2Values" NAME="module13" XPOS="416" YPOS="32"/>
+			<MODULE CLASS="Transform" TYPE="SetRotation" NAME="module14" XPOS="576" YPOS="96" VALUE="car"/>
+			<MODULE CLASS="String" TYPE="Merge2Values" NAME="module15" XPOS="416" YPOS="160"/>
+			<MODULE CLASS="Numeric" TYPE="Mul" NAME="module16" XPOS="480" YPOS="96"/>
+			<ROUTE OUT="module1.1" IN="module8.0"/>
+			<ROUTE OUT="module2.0" IN="module4.0"/>
+			<ROUTE OUT="module4.0" IN="module8.1"/>
+			<ROUTE OUT="module8.0" IN="module9.0"/>
+			<ROUTE OUT="module9.0" IN="module12.0"/>
+			<ROUTE OUT="module10.0" IN="module13.0"/>
+			<ROUTE OUT="module12.0" IN="module13.1"/>
+			<ROUTE OUT="module11.0" IN="module15.0"/>
+			<ROUTE OUT="module12.1" IN="module15.1"/>
+			<ROUTE OUT="module13.0" IN="module16.0"/>
+			<ROUTE OUT="module15.0" IN="module16.1"/>
+			<ROUTE OUT="module16.0" IN="module14.1"/>
+			<ROUTE OUT="module1.0" IN="module14.E"/>
+		</DIAGRAM>
+	</EVENT>
+</CBF>

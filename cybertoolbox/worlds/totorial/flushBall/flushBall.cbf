@@ -1,0 +1,88 @@
+#CBF V1.0 ascii
+Event {
+	name   "Start"
+	type   "SYSTEM"
+	Diagram {
+		name "initializeColor"
+		pos  244 420
+		size 320 240
+		Module {
+			class "Material"
+			type  "SetDiffuseColor"
+			name  "module1"
+			pos   224 64
+			value "ballColor"
+		}
+		Module {
+			class "String"
+			type  "Color"
+			name  "module2"
+			pos   32 64
+			value "1.0,0.0,0.0"
+		}
+		Dataflow module2.0 to module1.1
+	}
+}
+Event {
+	name   "Frame"
+	type   "SYSTEM"
+}
+Event {
+	name   "Mouse"
+	type   "SYSTEM"
+}
+Event {
+	name   "Keyboard"
+	type   "SYSTEM"
+}
+Event {
+	name   "Pickup"
+	type   "SYSTEM"
+}
+Event {
+	name   "Pickup"
+	type   "USER"
+	option "ballShape"
+	Diagram {
+		name "changeColor"
+		pos  73 643
+		size 320 240
+		Module {
+			class "System"
+			type  "Pickup"
+			name  "module1"
+			pos   0 0
+		}
+		Module {
+			class "String"
+			type  "Color"
+			name  "module2"
+			pos   64 32
+			value "1.0,1.0,0.0"
+		}
+		Module {
+			class "String"
+			type  "Color"
+			name  "module3"
+			pos   64 96
+			value "1.0,0.0,0.0"
+		}
+		Module {
+			class "String"
+			type  "Selector"
+			name  "module4"
+			pos   160 64
+		}
+		Module {
+			class "Material"
+			type  "SetDiffuseColor"
+			name  "module5"
+			pos   256 64
+			value "ballColor"
+		}
+		Dataflow module3.0 to module4.1
+		Dataflow module2.0 to module4.0
+		Dataflow module1.0 to module4.E
+		Dataflow module4.0 to module5.1
+	}
+}
